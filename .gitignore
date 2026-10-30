@@ -20,3 +20,5 @@ backups/
 *.key
 .local-test-accounts.json
 *.tsbuildinfo
+
+.paypal-sandbox-plans.json

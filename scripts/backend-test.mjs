@@ -84,6 +84,32 @@ try {
     "member cannot grant themselves Diamond",
   );
   check(
+    Boolean(
+      (
+        await a.client.from("subscriptions").insert({
+          user_id: a.id,
+          provider: "stripe",
+          environment: "sandbox",
+          tier: "gold",
+          status: "active",
+        })
+      ).error,
+    ),
+    "member cannot insert a paid subscription",
+  );
+  check(
+    Boolean(
+      (
+        await a.client.from("payment_events").insert({
+          provider: "stripe",
+          event_id: "evt_forged",
+          environment: "sandbox",
+        })
+      ).error,
+    ),
+    "member cannot record a payment webhook event",
+  );
+  check(
     Boolean((await a.client.from("swipes").select("*")).error),
     "raw likes table is inaccessible",
   );

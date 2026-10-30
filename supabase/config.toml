@@ -373,6 +373,19 @@ authorization_url_path = "/oauth/consent"
 # Allow dynamic client registration
 allow_dynamic_registration = false
 
+# User functions verify sessions through Supabase Auth and enforce enrolled TOTP.
+# Provider webhooks verify their raw-body signatures instead of a user session.
+[functions.billing]
+verify_jwt = false
+[functions.photo-upload]
+verify_jwt = false
+[functions.account-delete]
+verify_jwt = false
+[functions.call-relay]
+verify_jwt = false
+[functions.billing-webhook]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

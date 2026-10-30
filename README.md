@@ -8,11 +8,11 @@ An adults-only Pakistani/Indian dating and relationship web app, planned for mob
 
 The first application milestone is implemented: responsive landing/discovery, a labelled fictional demo, matching, persistent demo conversations, membership previews, profile editing, an admin dashboard, and a Supabase backend for real test accounts, matching, chat and TOTP two-factor authentication.
 
-The core backend has passed 29 direct authorization checks, including real authenticator verification. The call screen, relay function and call authorization are implemented but actual media and provider setup remain unverified. Genuine provider sandbox checkout/webhooks, OAuth configuration, hosted transactional email and final launch policies remain outstanding. Their controls do not pretend to perform real calls or payments.
+The core backend has passed 31 direct authorization checks, plus 19 billing database checks and 27 unit tests, including real authenticator verification. The call screen, relay function and call authorization are implemented but actual media and provider setup remain unverified. Sandbox billing functions exist, but they stay disabled until provider secrets, webhooks and PayPal plan IDs are configured. OAuth, hosted transactional email and final launch policies remain outstanding. Their controls do not pretend to perform real calls or live payments.
 
 ## Hosted preview
 
-Open https://findmymehram.pages.dev/ and choose **Explore the demo**. The fictional demo is browser-local and does not place calls or charge money. A dedicated hosted backend is configured for invited test accounts; public sign-ups are disabled, and the operator must complete genuine TOTP before using admin. Hosted operator login is still being verified. OAuth, transactional emails and actual payment/call provider tests remain pending.
+Open https://findmymehram.pages.dev/ and choose **Explore the demo**. The fictional demo is browser-local and does not place calls or charge money. A dedicated hosted backend is configured for invited test accounts; public sign-ups are disabled. Genuine hosted operator login, TOTP and admin access have been verified. OAuth, transactional emails and actual payment/call provider tests remain pending. See the [testing handover](docs/testing-handover.md) for exactly what can be tested now.
 
 ## Run locally
 
@@ -40,6 +40,7 @@ Local fixture credentials are generated in the ignored `.local-test-accounts.jso
 npm run typecheck
 npm test
 npm run backend:test
+npm run backend:billing-test
 npm run build
 ```
 

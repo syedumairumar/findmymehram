@@ -54,7 +54,7 @@ Browser specs are in `tests/e2e`. Install their browsers with `npx playwright in
 
 ## External dependencies
 
-Google/Facebook remain disabled until provider applications and exact callbacks are configured. Hosted verification/recovery needs an approved transactional SMTP sender. Genuine PayPal/card checkout, verified webhooks and audio/video calls remain separate integration milestones; demo tier switching and call controls do not constitute those integrations.
+Google/Facebook remain disabled until provider applications and exact callbacks are configured. Hosted verification/recovery needs an approved transactional SMTP sender. Genuine PayPal/card checkout needs function secrets, Stripe/PayPal webhook URLs and `VITE_PAYMENTS_ENABLED=true`; `npm run paypal:plans` can create sandbox plans after PayPal credentials are in `supabase/.env.local`. Audio/video calls remain a separate integration. Demo tier switching and call controls do not constitute those integrations.
 
 Server-only placeholders are in `supabase/.env.example`. Keep real values in ignored `supabase/.env.local` or hosted secret settings, never in `VITE_` variables or Git.
 
@@ -67,3 +67,5 @@ Keep disk headroom: startup rejects less than 5 GB free, and fresh image downloa
 ## Editing
 
 Use feature branches, relevant checks, reviewed commits and preview URLs. A frontend build does not deploy SQL migrations or configure provider accounts. Follow the deployment guide for those steps.
+
+Billing database checks: `npm run backend:billing-test` uses disposable local accounts and validates atomic reconciliation and subscription boundaries. It refuses a non-loopback backend. This does not substitute for real provider sandbox purchases.

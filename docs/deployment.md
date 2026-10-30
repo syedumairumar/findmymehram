@@ -1,6 +1,6 @@
 # Deployment and rollback
 
-Status: deployment design. The GitHub repository is https://github.com/syedumairumar/findmymehram and is linked locally as `origin`. The owner created it as public; preserve that audience unless the owner requests a change. A Cloudflare Pages project named `findmymehram` and London Supabase test project `nyhohhdleovhbxwafxpn` exist. The core schema was applied through the SQL Editor; the first frontend is deployed at https://findmymehram.pages.dev/ as an explicit fictional demo. No secret is recorded here. The default is Cloudflare Pages plus Supabase; the main plan documents the optional Oracle/Docker alternative.
+Status: invitation-only hosted test deployment. The GitHub repository is https://github.com/syedumairumar/findmymehram and is linked locally as `origin`. The owner created it as public; preserve that audience unless the owner requests a change. A Cloudflare Pages project named `findmymehram` and London Supabase test project `nyhohhdleovhbxwafxpn` exist. The core schema was applied through the SQL Editor; the first frontend is deployed at https://findmymehram.pages.dev/ as an explicit fictional demo. No secret is recorded here. The default is Cloudflare Pages plus Supabase; the main plan documents the optional Oracle/Docker alternative.
 
 ## Verified hosting configuration
 
@@ -8,10 +8,10 @@ Status: deployment design. The GitHub repository is https://github.com/syedumair
 - Build: `npm run typecheck && npm test && npm run build`; output: `dist`; `NODE_VERSION=24`.
 - Assets and self-hosted fonts are served through the Pages CDN.
 - Production build variables now point to the dedicated test Supabase project using its public publishable key. `VITE_INVITE_ONLY=true`; password-reset email, calls, payments and both OAuth providers remain disabled pending integration. The ignored local `.env.local` is not uploaded. Branch previews have no backend variables and remain fictional demos.
-- Supabase project: `nyhohhdleovhbxwafxpn`, London. Migrations `202610300001` (core), `202610300002` (calls) and `202610300003` (operator access) were applied in transactions through SQL Editor. Before the first CLI `db push`, verify schema equivalence and register those revisions with `supabase migration repair 202610300001 202610300002 202610300003 --status applied --project-ref nyhohhdleovhbxwafxpn` against this exact project, to avoid replaying the schema.
-- Pushes to `main` trigger a new frontend build. Branch protection and hosted backend/function deployment are not configured yet. GitHub browser checks run separately and must be reviewed before handover.
+- Supabase project: `nyhohhdleovhbxwafxpn`, London. Migrations `202610300001` (core), `202610300002` (calls) and `202610300003` (operator access) were applied in transactions through SQL Editor. `202610300004` (billing reconcile) was also applied transactionally in SQL Editor on 30 October 2026. The hosted project has no CLI migration-history table yet. Before the first CLI `db push`, verify schema equivalence and register those revisions with `supabase migration repair 202610300001 202610300002 202610300003 202610300004 --status applied --project-ref nyhohhdleovhbxwafxpn` against this exact project, to avoid replaying the schema.
+- Pushes to `main` trigger a new frontend build. Branch protection and automatic backend/function deployment are not configured yet. GitHub browser checks run separately and must be reviewed before handover.
 
-Hosted Auth configuration was checked: public sign-ups, anonymous sign-ins and manual linking are off; email confirmation and TOTP are on; minimum passwords are 12 characters; secure password change is on; email OTP expiry is 600 seconds. Site URL is the Pages origin. Redirects are restricted to `/profile`, `/auth?mode=update` and `/security` on that origin. Five direct hosted checks verified disabled sign-ups and anonymous denial for admin, swipes, memberships and calls. The designated operator was created by the owner and assigned an owner role; actual operator login/TOTP remains to be verified through the hosted app.
+Hosted Auth configuration was checked: public sign-ups, anonymous sign-ins and manual linking are off; email confirmation and TOTP are on; minimum passwords are 12 characters; secure password change is on; email OTP expiry is 600 seconds. Site URL is the Pages origin. Redirects are restricted to `/profile`, `/auth?mode=update` and `/security` on that origin. Five direct hosted checks verified disabled sign-ups and anonymous denial for admin, swipes, memberships and calls. The designated operator was created by the owner, assigned an owner role and successfully completed hosted login/TOTP to reach the genuine admin dashboard.
 
 ## Environments
 
@@ -68,3 +68,23 @@ Database rollback is a separate operation: prefer a forward corrective migration
 The owner must have approved merchant accounts for the actual dating business. Create live products/plans, register live webhooks, configure distinct signing secrets and permitted return/callback URLs, confirm currency/prices/tax/cancellation disclosures, then run the provider's go-live checks. Replacing one API key is insufficient. Existing sandbox customers and subscriptions must never be treated as live payments.
 
 Keep sandbox credentials out of the live deployment and make the server reject a mismatched provider environment. Decide the release and rollback policy before accepting real charges; rolling back code must not duplicate payment creation or discard subscription state.
+
+## Server deployment recorded on 30 October 2026
+
+Deployed `billing`, `billing-webhook`, `photo-upload`, `account-delete` and `call-relay` through the Supabase dashboard. For the dashboard editor, the local modules were bundled to one ESM file per entry point using `esbuild@0.25.12`, preserving external pinned `npm:` imports and `node:` built-ins. Repository TypeScript is the source of truth; normal CLI deployment can bundle it directly.
+
+The owner approved disabling the legacy JWT gateway check for these functions. Member handlers call Supabase Auth `getUser` and enforce verified email/enrolled TOTP; the external payment handler validates provider signatures. The matching `verify_jwt=false` entries are versioned in `supabase/config.toml`.
+
+`APP_ORIGINS` and `APP_URL` are the exact Pages origin. Server `PAYMENTS_ENABLED=false`, `PAYMENTS_ENVIRONMENT=sandbox` and `CALLS_ENABLED=false` keep unfinished integrations disabled. Stripe monthly price IDs are stored as function configuration. Provider secrets/webhooks and actual sandbox purchases remain a separate release gate. Do not enable frontend flags before provider runtime checks pass.
+
+For future function releases after authenticating the CLI, use the exact test reference:
+
+```sh
+npx supabase functions deploy billing --project-ref nyhohhdleovhbxwafxpn
+npx supabase functions deploy billing-webhook --project-ref nyhohhdleovhbxwafxpn
+npx supabase functions deploy photo-upload --project-ref nyhohhdleovhbxwafxpn
+npx supabase functions deploy account-delete --project-ref nyhohhdleovhbxwafxpn
+npx supabase functions deploy call-relay --project-ref nyhohhdleovhbxwafxpn
+```
+
+Migration history must be reconciled against the actual hosted schema before the first CLI database push. Do not rerun migrations 001–004 in SQL Editor or use `db reset` on this project.
