@@ -1,6 +1,6 @@
 # Deployment and rollback
 
-Status: deployment design. The GitHub repository is https://github.com/syedumairumar/findmymehram and is linked locally as `origin`. The owner created it as public; preserve that audience unless the owner requests a change. No Cloudflare project, backend project or pipeline is configured yet. Replace that status only after verifying each resource. The default is Cloudflare Pages plus Supabase; the main plan documents the optional Oracle/Docker alternative.
+Status: deployment design. The GitHub repository is https://github.com/syedumairumar/findmymehram and is linked locally as `origin`. The owner created it as public; preserve that audience unless the owner requests a change. A Cloudflare Pages project named `findmymehram` and London Supabase test project `nyhohhdleovhbxwafxpn` exist. The core schema was applied through the SQL Editor; the initial application deployment is being configured. No secret is recorded here. The default is Cloudflare Pages plus Supabase; the main plan documents the optional Oracle/Docker alternative.
 
 ## Environments
 
@@ -18,7 +18,7 @@ Use the existing `syedumairumar/findmymehram` repository; do not create a duplic
 
 Implement CI that installs from the lockfile, type-checks, runs meaningful tests, applies migrations to a disposable local backend and builds the frontend. Never expose cloud/provider secrets to untrusted fork PRs. Where GitHub's plan supports it, require checks on the release branch; otherwise enforce the same condition inside the deploy workflow.
 
-Choose one release owner: a gated GitHub Actions workflow. It publishes preview and main frontend artifacts with Cloudflare tooling only after checks pass. Avoid a second automatic Cloudflare Git deployment that can race CI or skip backend steps. Pin official actions and tools; scope each deployment credential to its intended project.
+Cloudflare Pages owns frontend deployment from the connected GitHub repository. Its build command must run type checks and unit checks before building `dist`. GitHub Actions performs additional checks, including browser specs; require those checks before merging when branch protection is configured. Apply compatible database migrations and functions separately before merging frontend code that depends on them. Pin actions and scope integration access to this repository.
 
 ## Initial setup and required secrets
 

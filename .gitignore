@@ -18,3 +18,5 @@ supabase/.branches/
 backups/
 *.pem
 *.key
+.local-test-accounts.json
+*.tsbuildinfo

@@ -1,6 +1,6 @@
 # Find My Mehram — implementation and hosting plan
 
-Prepared and updated 30 October 2026. Status: planning and repository preparation only; no application, cloud account, VM or deployment has been created. Local development, deployment documentation, a full administration portal and provider sandbox subscriptions are required deliverables.
+Prepared and updated 30 October 2026. Status: the first application milestone is implemented. See the root README for verified capabilities and remaining integrations. The core schema is applied to the London Supabase test project, and a GitHub-connected Cloudflare Pages project exists. Final application deployment is being configured. No VM was needed for this managed architecture.
 
 ## 1. Intended outcome and assumptions
 

@@ -1,0 +1,2 @@
+-- No real user data and no default administrator credentials.
+-- Use npm run backend:seed to create disposable LOCAL test accounts.

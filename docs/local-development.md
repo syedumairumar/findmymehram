@@ -1,68 +1,69 @@
 # Local development
 
-Status: planned workflow, not yet executable. The repository currently contains documentation only. Implement and verify the commands below when scaffolding the app, then record tested runtime versions and a clean-clone verification date here.
+Use Node 24, npm and Docker. `.nvmrc` pins the Node major version; install exact dependencies with `npm ci`. Initial unit verification used Node 24.22.2, and local backend verification used Docker Desktop 4.97.0 on Apple Silicon.
 
-## Required implementation
-
-Pin a supported Node.js LTS release, npm version, Supabase CLI and all dependencies. Commit `.nvmrc`, `package.json`, lockfile, `supabase/config.toml`, migrations, fictional seed data and `.env.example`. Document Docker runtime installation for macOS/Windows/Linux; use a runtime whose licence fits the owner's use.
-
-Frontend scripts must include `dev`, `build`, `typecheck`, `test` and `test:e2e`. Backend and integration tests must verify access policies and payment state changes, not just UI rendering. Define an idempotent development-only seed command for local storage/auth fixtures. Never ship a shared administrator password or run test seeds against hosted/live data.
-
-## Fresh clone workflow — to be validated
-
-After an authenticated clone of the private GitHub repository, open its root and run:
+## Fictional preview
 
 ```sh
-nvm install
-nvm use
 npm ci
-cp .env.example .env.local
-npx supabase start
-npx supabase db reset
 npm run dev
 ```
 
-Start Docker before `supabase start`. `db reset` is destructive to the local development database; use it only for disposable local fixtures. The CLI must be pinned as a dev dependency so `npx` uses the intended version. Do not use `--linked` or remote flags when resetting local data.
+Open http://127.0.0.1:5173 and choose **Explore the demo**. With no `.env.local`, no backend is required. Fictional swipes, messages, reports and tier previews stay in browser local storage. Messages do not reach another person; demo tier changes are not payments. My profile → Reset demo resets content; Log out removes the active demo. Never enter sensitive real information in the demo.
 
-Fill frontend `.env.local` values using the local backend URL and publishable key. Write the exact development URL and local mail-preview URL printed by the implemented tools into this guide. Do not post the CLI's privileged credentials in screenshots, commits or support messages.
+## Real local accounts
 
-Run backend functions using the implemented local function command, anticipated to be:
+Start Docker, then:
 
 ```sh
-npx supabase functions serve --env-file supabase/.env.local
+npm run backend:start
+npm run backend:env
+npm run backend:seed
+npm run dev
 ```
 
-Supply a separately documented, ignored `supabase/.env.local` for server secrets. Never prefix secret keys with `VITE_`, which exposes values in the browser build. The checked-in example files must list purpose, environment and whether each value is public or secret, including database/auth, OAuth, payment and TURN configuration.
+The startup wrapper starts the core services, restricts published project ports to localhost and verifies their final bindings. It preserves named volumes and Kong configuration while recreating this project's published containers. The CLI initially publishes its default development ports before restriction; use a trusted development network/host firewall during bootstrap. The wrapper stops the project if hardening fails. Final `docker ps` mappings must start with `127.0.0.1:`.
 
-## Local testing modes
+The core includes PostgreSQL, Auth, REST, Realtime, private Storage, Kong and local email capture. Studio, postgres-meta, analytics, image proxy, pooling and Edge runtime are excluded from the lightweight start. Edge Functions need a separately verified runtime/deployment; photo upload and account deletion are not fully available locally without them.
 
-- **Local core:** fictional users/profiles, local auth, migrations, storage fixtures and realtime; capture verification/reset emails in the local mail preview. Backend core workflows should not need a hosted Supabase account.
-- **Provider sandbox:** PayPal sandbox and Stripe sandbox checkout, test renewals/failures and verified webhooks. These need internet access and owner-controlled sandbox accounts. Any mock mode must be visibly labelled and cannot count as proof the provider integration works.
-- **Social login:** separate development OAuth applications/redirect allowlists and Facebook tester roles. Provider sign-in is not an offline feature.
-- **Calling:** localhost can exercise camera/microphone, but real acceptance needs two devices on separate networks with TURN. For another phone, use a documented HTTPS development tunnel or trusted local certificate setup; plain HTTP on a LAN address may not support required browser APIs.
+`backend:env` writes only the local public API URL and anon key into ignored `.env.local`. It refuses to overwrite a hosted configuration. No service-role key goes into browser variables. Restart Vite after environment changes.
 
-## Payment webhook development
+The seed creates five fictional local accounts with random passwords in the ignored, permission-restricted `.local-test-accounts.json`. Open that file locally for credentials. Omar has the owner role, but must enroll and verify a real authenticator at `/security` before `/admin` works. Fixture scripts are guarded to the local API on port 54321.
 
-For Stripe, document installation/login for its official CLI and forwarding to the exact implemented function route. PayPal needs a reachable HTTPS development endpoint registered with its sandbox app. Use an ephemeral development tunnel restricted to the required route, and terminate it after testing. Neither provider should send sandbox callbacks into live data.
+| Service | URL |
+| --- | --- |
+| App | http://127.0.0.1:5173 |
+| API | http://127.0.0.1:54321 |
+| Verification/reset email preview | http://127.0.0.1:54324 |
+| PostgreSQL | 127.0.0.1:54322; use CLI status locally for credentials |
 
-Preserve provider signature-verification inputs, including the raw request body where required. Use the actual secrets/webhook IDs for the receiving endpoint. Never disable signature verification just to make local tests pass. Provider simulators and authentic sandbox transactions must be distinguished in the test report.
+`npm run backend:stop` preserves local data. `npm run backend:reset` destroys the disposable local database and reapplies migrations; never add remote/linked flags to a local reset. Remove the old ignored fixture-credential file before reseeding a reset database.
 
-## Everyday edit and check workflow
+## Verification
 
 ```sh
-git switch -c feature/short-description
-npm run dev
 npm run typecheck
 npm test
-npm run test:e2e
+npm run backend:test
 npm run build
-git add <explicit-files>
-git commit -m "Describe the change"
-git push -u origin feature/short-description
 ```
 
-The `<explicit-files>` placeholder must be replaced with reviewed paths. These npm scripts do not exist yet. Run relevant local backend/policy tests before a PR. Open the PR and use its preview URL before merging. Keep migrations in Git; avoid dashboard-only schema edits that a fresh clone cannot reproduce.
+Backend tests create and remove disposable local users. Initial checks covered admin denial, membership self-escalation, hidden likes, premium expiry, unique concurrent matching, message isolation, blocking and genuine TOTP enforcement.
 
-## Handover verification
+Browser specs are in `tests/e2e`. Install their browsers with `npx playwright install chromium webkit`, then run `npm run test:e2e` on your machine/CI. Record separately whether that automated suite actually ran; unit checks alone are not end-to-end verification.
 
-A developer must follow this guide from a fresh clone, start the complete core app, preview a reset email, create a match, send a message and open the authorized admin portal. Record prerequisites, commands, URLs and any provider-only limitations. Add troubleshooting for Docker not running, port conflicts, paused hosted projects, OAuth callbacks, missing mail and payment callbacks. Provide stop/restart instructions without deleting persistent local data.
+## External dependencies
+
+Google/Facebook remain disabled until provider applications and exact callbacks are configured. Hosted verification/recovery needs an approved transactional SMTP sender. Genuine PayPal/card checkout, verified webhooks and audio/video calls remain separate integration milestones; demo tier switching and call controls do not constitute those integrations.
+
+Server-only placeholders are in `supabase/.env.example`. Keep real values in ignored `supabase/.env.local` or hosted secret settings, never in `VITE_` variables or Git.
+
+## Docker recovery
+
+A disk-full failure damaged cached Docker snapshots. Docker Desktop was replaced with the checksum/signature-verified official 4.97.0 installer; the engine and hello-world passed. An official single-platform AMD64 Storage image was exported/reloaded to bypass the damaged ARM snapshot. This local emulation workaround is not a production architecture choice. Optional Studio/meta images remained incompatible and are excluded. Other projects' images/volumes were preserved.
+
+Keep disk headroom: startup rejects less than 5 GB free, and fresh image downloads can require substantially more. Do not factory-reset Docker or prune unrelated projects to follow this guide.
+
+## Editing
+
+Use feature branches, relevant checks, reviewed commits and preview URLs. A frontend build does not deploy SQL migrations or configure provider accounts. Follow the deployment guide for those steps.

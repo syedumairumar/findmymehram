@@ -1,0 +1,44 @@
+{
+  "name": "findmymehram",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "typecheck": "tsc -b --pretty false",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "backend:start": "node scripts/start-backend.mjs",
+    "backend:stop": "supabase stop",
+    "backend:reset": "supabase db reset",
+    "backend:test": "node scripts/backend-test.mjs",
+    "backend:env": "node scripts/local-env.mjs",
+    "backend:seed": "node scripts/seed-local.mjs",
+    "functions:serve": "supabase functions serve --env-file supabase/.env.local"
+  },
+  "dependencies": {
+    "@fontsource/cormorant-garamond": "5.3.0",
+    "@fontsource/dm-sans": "5.3.0",
+    "@supabase/supabase-js": "2.118.0",
+    "lucide-react": "1.65.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router-dom": "7.18.5",
+    "recharts": "3.10.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "supabase": "2.122.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}
