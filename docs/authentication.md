@@ -48,7 +48,7 @@ Manual account linking remains disabled. Supabase automatically links a provider
 
 1. Brevo's SMTP service is connected to Supabase Auth on port 587. This test currently uses a Gmail sender address because the owner has no custom domain. Brevo sender/phone verification and real delivery still need confirmation; Gmail does not give the app domain-aligned SPF/DKIM authentication. Consider these settings preparatory until a controlled inbox receives the expected messages.
 2. The SMTP username, key, sender name and sender address are saved in Supabase Auth's protected SMTP settings. Keep the SMTP key only there and in a protected local secret store, never in Git or frontend build variables.
-3. Copy `supabase/templates/confirmation.html` and `supabase/templates/recovery.html` into Supabase Auth's hosted Email Templates page with the matching subjects. The `{{ .ConfirmationURL }}` variable must remain intact.
+3. The hosted confirmation and reset-password templates have now been saved in Supabase Auth using the matching subjects and `{{ .ConfirmationURL }}`. Their HTML source is versioned at `supabase/templates/confirmation.html` and `supabase/templates/recovery.html`.
 4. Send confirmation and recovery messages to controlled test inboxes. Confirm the links return to the exact Pages URLs above, complete password replacement, and verify that unknown addresses receive the same generic success response.
 5. Keep hosted `VITE_PASSWORD_RESET_ENABLED=false` until a controlled test inbox has received both confirmation and reset messages and the callback links have been checked. Keep email confirmation enabled.
 
