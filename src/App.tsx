@@ -657,6 +657,11 @@ function Auth() {
             {success}
           </div>
         )}
+        {success && update && (
+          <Link className="button primary full" to="/profile">
+            Continue to your profile <ArrowRight size={17} />
+          </Link>
+        )}
         <form onSubmit={submit}>
           {!update && (
             <label>
@@ -798,10 +803,21 @@ function Auth() {
 }
 export default function App() {
   const a = useApp(),
-    loc = useLocation();
+    loc = useLocation(),
+    nav = useNavigate();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [loc.pathname]);
+  useEffect(() => {
+    if (!supabase) return;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY")
+        nav("/auth?mode=update", { replace: true });
+    });
+    return () => subscription.unsubscribe();
+  }, [nav]);
   return (
     <>
       <a className="skip-link" href="#main-content">
