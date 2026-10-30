@@ -10,6 +10,10 @@ The first application milestone is implemented: responsive landing/discovery, a 
 
 The core backend has passed 16 direct authorization checks, including real authenticator verification. Audio/video calling, genuine provider sandbox checkout/webhooks, OAuth configuration, hosted transactional email and final launch policies remain outstanding. Their controls do not pretend to perform real calls or payments.
 
+## Hosted preview
+
+Open https://findmymehram.pages.dev/ and choose **Explore the demo**. This deployment is a browser-local fictional demo: it does not collect real registrations, place calls or charge money. Account services will be connected for an invited test pilot after configuration and verification.
+
 ## Run locally
 
 Use Node 24 (`nvm install && nvm use`). For the fictional browser-local preview:

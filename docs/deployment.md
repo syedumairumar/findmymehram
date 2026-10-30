@@ -1,6 +1,15 @@
 # Deployment and rollback
 
-Status: deployment design. The GitHub repository is https://github.com/syedumairumar/findmymehram and is linked locally as `origin`. The owner created it as public; preserve that audience unless the owner requests a change. A Cloudflare Pages project named `findmymehram` and London Supabase test project `nyhohhdleovhbxwafxpn` exist. The core schema was applied through the SQL Editor; the initial application deployment is being configured. No secret is recorded here. The default is Cloudflare Pages plus Supabase; the main plan documents the optional Oracle/Docker alternative.
+Status: deployment design. The GitHub repository is https://github.com/syedumairumar/findmymehram and is linked locally as `origin`. The owner created it as public; preserve that audience unless the owner requests a change. A Cloudflare Pages project named `findmymehram` and London Supabase test project `nyhohhdleovhbxwafxpn` exist. The core schema was applied through the SQL Editor; the first frontend is deployed at https://findmymehram.pages.dev/ as an explicit fictional demo. No secret is recorded here. The default is Cloudflare Pages plus Supabase; the main plan documents the optional Oracle/Docker alternative.
+
+## Verified hosting configuration
+
+- Cloudflare Pages: `findmymehram`, connected to `syedumairumar/findmymehram`, production branch `main`.
+- Build: `npm run typecheck && npm test && npm run build`; output: `dist`; `NODE_VERSION=24`.
+- Assets and self-hosted fonts are served through the Pages CDN.
+- No hosted Supabase public variables are set in the current frontend. The ignored local `.env.local` is not uploaded.
+- Supabase project: `nyhohhdleovhbxwafxpn`, London. Core migration `202610300001` was applied in a transaction through SQL Editor. Before the first CLI `db push`, verify schema equivalence and register that revision with `supabase migration repair 202610300001 --status applied` against this exact project, to avoid replaying the schema.
+- Pushes to `main` trigger a new frontend build. Branch protection and hosted backend/function deployment are not configured yet. GitHub browser checks run separately and must be reviewed before handover.
 
 ## Environments
 

@@ -1,6 +1,6 @@
 # Payments and administration
 
-Status: required implementation specification; no checkout, payment account or admin UI exists yet.
+Status: the first admin UI and backend authorization are implemented. The real portal requires a server-granted role and verified TOTP; its fictional demo uses labelled sample data. Current tables are bounded to 100 rows and aggregate daily active/traffic metrics are not connected. Genuine provider checkout, subscription lifecycle/webhooks and advanced reporting below remain implementation requirements.
 
 ## Payment methods and products
 

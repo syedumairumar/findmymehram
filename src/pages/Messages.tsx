@@ -62,17 +62,16 @@ export default function Messages() {
       void backend().removeChannel(channel);
     };
   }, [match?.id, a.demo, a.user]);
-  useEffect(
-    () => end.current?.scrollIntoView({ block: "nearest" }),
-    [rows.length],
-  );
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "nearest" });
+  }, [rows.length]);
   async function send() {
     if (!match || !body.trim() || busy) return;
     setBusy(true);
     try {
       await a.send(match.id, body);
       setBody("");
-      setRows(await a.chat(match.id));
+      if (a.mode === "backend") setRows(await a.chat(match.id));
     } catch (e) {
       a.notify(message(e));
     } finally {

@@ -14,6 +14,7 @@ test("demo matching, private likes and durable conversation", async ({
     page.getByRole("heading", { name: "The feeling’s mutual." }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Say hello", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Zara", exact: true })).toBeVisible();
   await page
     .getByLabel("Your message")
     .fill("A little hello from the integration test.");

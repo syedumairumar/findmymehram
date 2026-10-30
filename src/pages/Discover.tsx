@@ -375,7 +375,7 @@ export default function Discover() {
               Your story could start with a hello.
             </p>
             <Link
-              to="/messages"
+              to={`/messages?match=${encodeURIComponent(a.matches.find((m) => m.profile.id === matched.id)?.id ?? "")}`}
               className="button primary full"
               onClick={() => setMatched(null)}
             >
