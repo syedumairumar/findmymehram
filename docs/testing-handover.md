@@ -16,9 +16,11 @@ The demo explicitly labels fictional profiles, simulated membership changes and 
 
 ## Invited real accounts and administration
 
-The production Pages deployment is connected to a dedicated London Supabase test project. Public sign-ups are disabled server-side. Use the owner's manually created test accounts until invitation email is configured. Never share the owner's administrator credentials.
+The production Pages deployment is connected to a dedicated London Supabase test project. Public sign-ups are disabled server-side. Never share the owner's administrator credentials.
 
 The designated operator has completed genuine authenticator enrollment and reached the real `/admin` dashboard. Operator accounts do not need a public dating profile or member date of birth. Member counts represent completed member profiles, so an operator alone correctly produces zero members.
+
+Two member invitation emails have been accepted by Supabase for sending. The corresponding accounts are present in Auth and are pending invitation acceptance, password setup and member onboarding. Inbox receipt is not yet confirmed; each person must open their own invite, choose their own password, confirm they are 18+, accept the test Terms/Privacy Notice and complete their own fictional profile. Do not create a match or call session until both members have completed onboarding and each has chosen to like the other.
 
 For subsequent operator sign-ins, enter the password on `/auth`, then verify the authenticator code on `/security`. The server checks both the administrator role and the verified second-factor session before returning privileged data. Demo admin screens cannot grant real permissions.
 
@@ -27,9 +29,9 @@ Real member matching/chat requires at least two invited adults who complete fict
 ## Remaining integrations
 
 - Additional provider renewal, declined/3DS payment, dispute and PayPal refund cases. The successful purchase/cancellation flows and Stripe full refund are verified; those do not substitute for every lifecycle scenario.
-- Google and Facebook provider apps and callback verification.
-- Transactional verification/reset/invitation email. Reset email is visibly unavailable in the hosted pilot until delivery is configured.
-- Call relay credentials, actual audio/video tests on separate devices/networks. Calling source and authorization are implemented; it remains disabled and unverified for real media.
+- Google and Facebook provider credentials and the Meta callback are configured in Supabase; the Pages build flags have not yet been deployed, new sign-ups remain disabled, Google test-user access may need setup, and Meta remains in Development mode.
+- Transactional verification/reset/invitation email. Branded templates are prepared and Brevo SMTP settings are saved. Supabase accepted the two test invitations for sending, but inbox receipt, link handling and password setup are unverified. The test sender/phone verification is still unverified, and password-reset email remains disabled.
+- Cloudflare TURN credentials and the `call-relay` backend are configured. Calls remain disabled until frontend/backend deployment and two-device audio/video tests on separate networks.
 - Traffic collection, full account administration, server pagination/advanced reports, operational monitoring/backups and final launch policy review.
 
 This is a test milestone, not a completed public/live service or legal compliance certification.
@@ -43,6 +45,7 @@ This is a test milestone, not a completed public/live service or legal complianc
 - Five direct hosted checks passed: public registration disabled; anonymous access denied to admin, raw likes, memberships and calls.
 - Actual hosted operator login/TOTP and dashboard were verified by the owner and observed in the browser. Hosted demo matching/chat persistence was also checked directly.
 - Five deployed server handlers reject anonymous/disabled requests, and four member handlers reject foreign origins. Both providers’ actual sandbox APIs verified all four monthly prices/plans.
+- Hosted consent migration `202610300005_oauth_signup_consent.sql` was applied in one transaction. A read-only SQL check verified the wrapper permissions and restricted legacy function. Supabase CLI migration history still needs reconciliation before future CLI migrations.
 - Homepage returned HTTP 200 with CSP, HSTS, frame protection, content-type protection and camera/microphone restricted to the app origin.
 - Docker's core development services remain healthy with published ports bound to loopback.
 

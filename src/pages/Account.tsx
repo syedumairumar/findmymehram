@@ -459,6 +459,7 @@ export function ProfilePage() {
       },
     ),
     [birthDate, setBirthDate] = useState(""),
+    [termsAccepted, setTermsAccepted] = useState(false),
     [busy, setBusy] = useState(false),
     [deleting, setDeleting] = useState(false),
     [confirmation, setConfirmation] = useState("");
@@ -472,7 +473,7 @@ export function ProfilePage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await a.saveProfile(form, birthDate || undefined);
+      await a.saveProfile(form, birthDate || undefined, termsAccepted);
     } catch (e) {
       a.notify(message(e));
     } finally {
@@ -591,6 +592,21 @@ export function ProfilePage() {
                 />
                 <small>Kept private. Only your age is shown.</small>
               </label>
+              {!a.me && (
+                <label className="checkbox profile-consent">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    required
+                  />
+                  <span>
+                    I confirm I am at least 18, accept the test{" "}
+                    <Link to="/policies/terms">Terms</Link>, and have read the{" "}
+                    <Link to="/policies/privacy">Privacy Notice</Link>.
+                  </span>
+                </label>
+              )}
               <label>
                 I identify as
                 <select

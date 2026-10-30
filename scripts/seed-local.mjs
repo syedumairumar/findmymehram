@@ -78,6 +78,7 @@ for (const [name, city, profession, gender, photo] of profiles) {
       intention: "A serious relationship",
       photo: "",
       birth_date: "1997-05-15",
+      terms_accepted: true,
     },
   });
   if (saved.error) throw saved.error;

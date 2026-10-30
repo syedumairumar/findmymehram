@@ -15,7 +15,7 @@ try{
   const email=`billing-${randomUUID()}@mehram.test`,password=`Fixture!${randomBytes(20).toString('hex')}`;
   const u=await must(admin.auth.admin.createUser({email,password,email_confirm:true}));accounts.push({id:u.user.id});
   const client=createClient(c.API_URL,c.ANON_KEY,{auth:{persistSession:false}});await must(client.auth.signInWithPassword({email,password}));accounts[i].client=client;
-  await must(client.rpc('save_profile',{details:{name:'Disposable billing test',city:'Test city',birth_date:'1995-01-01',interests:[],languages:[],photo:'',gender:'not specified'}}));
+  await must(client.rpc('save_profile',{details:{name:'Disposable billing test',city:'Test city',birth_date:'1995-01-01',interests:[],languages:[],photo:'',gender:'not specified',terms_accepted:true}}));
  }
  const [a,b]=accounts;
  const racing=await Promise.all([a.client.rpc('reserve_checkout',{chosen_provider:'stripe',chosen_tier:'gold'}),a.client.rpc('reserve_checkout',{chosen_provider:'paypal',chosen_tier:'gold'})]);

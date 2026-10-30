@@ -38,6 +38,7 @@ interface Store {
   saveProfile: (
     profile: Omit<Profile, "id">,
     birthDate?: string,
+    termsAccepted?: boolean,
   ) => Promise<void>;
   demo: DemoState | null;
   setDemo: (value: DemoState) => void;
@@ -312,7 +313,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         : "Report received. Our moderation team can review it.",
     );
   }
-  async function saveProfile(p: Omit<Profile, "id">, birthDate?: string) {
+  async function saveProfile(
+    p: Omit<Profile, "id">,
+    birthDate?: string,
+    termsAccepted = false,
+  ) {
     if (demo) setDemo({ ...demo, profile: { ...p, id: demo.profile.id } });
     else {
       await rpc("save_profile", {
@@ -320,6 +325,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ...p,
           photo: p.photo === me?.photo ? (me.photoPath ?? p.photo) : p.photo,
           birth_date: birthDate,
+          terms_accepted: termsAccepted,
         },
       });
       await refresh();

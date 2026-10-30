@@ -161,7 +161,7 @@ site_url = "http://127.0.0.1:5173"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://127.0.0.1:5173/profile", "http://127.0.0.1:5173/auth?mode=update", "http://localhost:5173/profile", "http://localhost:5173/auth?mode=update"]
+additional_redirect_urls = ["http://127.0.0.1:5173/profile", "http://127.0.0.1:5173/auth?mode=update", "http://127.0.0.1:5173/security", "http://localhost:5173/profile", "http://localhost:5173/auth?mode=update", "http://localhost:5173/security", "https://findmymehram.pages.dev/profile", "https://findmymehram.pages.dev/auth?mode=update", "https://findmymehram.pages.dev/security"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -226,7 +226,7 @@ double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
 enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
-secure_password_change = false
+secure_password_change = true
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
 max_frequency = "1s"
 # Number of characters used in the email OTP.
@@ -243,6 +243,16 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
+
+# Branded verification and recovery templates. Local mail is captured by Inbucket;
+# the hosted project must receive these templates through its Auth dashboard.
+[auth.email.template.confirmation]
+subject = "Confirm your Find My Mehram email"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Find My Mehram password"
+content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
@@ -334,6 +344,21 @@ url = ""
 # If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
 skip_nonce_check = false
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
+email_optional = false
+
+# Keep disabled until OAuth applications and their exact redirect URIs are set up.
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+skip_nonce_check = false
+email_optional = false
+
+[auth.external.facebook]
+enabled = false
+client_id = ""
+secret = "env(SUPABASE_AUTH_EXTERNAL_FACEBOOK_SECRET)"
+skip_nonce_check = false
 email_optional = false
 
 # Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
