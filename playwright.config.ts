@@ -9,7 +9,7 @@ export default defineConfig({
     env: {
       VITE_SUPABASE_URL: "https://restoration-test.supabase.co",
       VITE_SUPABASE_ANON_KEY: "test-only-public-key",
-      VITE_PAYMENTS_ENABLED: "false",
+      VITE_PAYMENTS_ENABLED: "true",
     },
   },
   projects: [

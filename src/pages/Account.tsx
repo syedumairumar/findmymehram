@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Heart,
   ArrowRight,
@@ -177,7 +177,8 @@ const plans: {
 ];
 export function MembershipPage() {
   const a = useApp(),
-    nav = useNavigate();
+    nav = useNavigate(),
+    location = useLocation();
   const [selected, setSelected] = useState<Tier | null>(null),
     [busy, setBusy] = useState(false);
   const paymentsEnabled = import.meta.env.VITE_PAYMENTS_ENABLED === "true";
@@ -186,8 +187,8 @@ export function MembershipPage() {
     cancel_at_period_end: boolean; environment: string;
   } | null>(null);
   const [billingError, setBillingError] = useState("");
-  async function loadBilling(sync = false) {
-    if (a.mode !== "backend" || !paymentsEnabled || !a.me) return;
+  async function loadBilling(sync = false, returning = false) {
+    if (a.mode !== "backend" || !paymentsEnabled || !a.me) return false;
     setBusy(true);
     try {
       const {data,error} = await backend().functions.invoke("billing", {body:{action:sync ? "sync" : "status"}});
@@ -196,10 +197,28 @@ export function MembershipPage() {
       setBilling(data?.subscription ?? null);
       setBillingError("");
       if (sync) await a.refresh();
-    } catch(e) {setBillingError(message(e));}
+      const settled = Boolean(data?.subscription?.paid_until && Date.parse(data.subscription.paid_until) > Date.now());
+      if (returning && settled) nav("/membership", {replace: true});
+      return settled;
+    } catch(e) {
+      setBillingError(returning ? "We’re confirming your test payment. If this takes longer, use Refresh billing status." : message(e));
+      return false;
+    }
     finally {setBusy(false);}
   }
-  useEffect(() => {void loadBilling(new URLSearchParams(location.search).get("checkout") === "pending");}, [a.mode, a.me?.id]);
+  useEffect(() => {
+    let disposed = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const returning = new URLSearchParams(location.search).get("checkout") === "pending";
+    async function update(attempt = 0) {
+      const settled = await loadBilling(returning, returning);
+      if (!disposed && returning && !settled && attempt < 5) {
+        timer = setTimeout(() => void update(attempt + 1), 5000);
+      }
+    }
+    void update();
+    return () => {disposed = true; if (timer) clearTimeout(timer);};
+  }, [a.mode, a.me?.id, location.search]);
   async function checkout(provider: "stripe" | "paypal") {
     if (!selected || selected === "free") return;
     if (a.mode === "demo") {
@@ -222,7 +241,7 @@ export function MembershipPage() {
       if (error) throw error;
       if (!data?.url)
         throw new Error(data?.error ?? "Checkout could not start.");
-      location.assign(assertCheckoutUrl(data.url));
+      window.location.assign(assertCheckoutUrl(data.url));
     } catch (e) {
       a.notify(message(e));
     } finally {

@@ -69,3 +69,5 @@ Keep disk headroom: startup rejects less than 5 GB free, and fresh image downloa
 Use feature branches, relevant checks, reviewed commits and preview URLs. A frontend build does not deploy SQL migrations or configure provider accounts. Follow the deployment guide for those steps.
 
 Billing database checks: `npm run backend:billing-test` uses disposable local accounts and validates atomic reconciliation and subscription boundaries. It refuses a non-loopback backend. This does not substitute for real provider sandbox purchases.
+
+Browser regressions run an isolated Vite instance on `127.0.0.1:5183`, with a fabricated backend origin and intercepted responses. They do not reuse the developer server or any real account/provider credentials. The payment-return regression covers delayed profiles, a transient verification failure, pending settlement, automatic retry and removal of return parameters after confirmation.

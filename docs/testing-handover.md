@@ -26,7 +26,7 @@ Real member matching/chat requires at least two invited adults who complete fict
 
 ## Remaining integrations
 
-- Genuine Stripe card and PayPal sandbox checkout, verified webhooks and subscription lifecycle. Checkout/webhook functions are in source; they stay disabled until `VITE_PAYMENTS_ENABLED=true`, successful provider sandbox lifecycle tests are complete. Sandbox credentials, Stripe/PayPal webhooks and both providers’ monthly plans are configured; the server also requires `PAYMENTS_ENABLED=true`. The return URL still does not grant a tier.
+- Additional provider renewal, declined/3DS payment, dispute and PayPal refund cases. The successful purchase/cancellation flows and Stripe full refund are verified; those do not substitute for every lifecycle scenario.
 - Google and Facebook provider apps and callback verification.
 - Transactional verification/reset/invitation email. Reset email is visibly unavailable in the hosted pilot until delivery is configured.
 - Call relay credentials, actual audio/video tests on separate devices/networks. Calling source and authorization are implemented; it remains disabled and unverified for real media.
@@ -37,7 +37,7 @@ This is a test milestone, not a completed public/live service or legal complianc
 ## Verification recorded on 30 October 2026
 
 - Latest app source is versioned in the owner's GitHub repository and automatically built by Cloudflare Pages.
-- GitHub checks passed: TypeScript, 27 unit tests (billing settlement/signatures and CSV security), server entry-point Deno checks, frontend build, dependency audit and six desktop/mobile browser cases.
+- GitHub checks passed: TypeScript, 27 unit tests (billing settlement/signatures and CSV security), server entry-point Deno checks, frontend build, dependency audit and eight desktop/mobile browser cases, including delayed profile restoration.
 - Thirty-one direct local backend authorization checks passed, including genuine TOTP, operator access without a member profile, paid-like boundaries, concurrent matching, messaging and call/block authorization.
 - Nineteen local billing database checks passed, covering duplicate checkout, event/lease concurrency, rollback, paid entitlement, cancellation and out-of-order reconciliation. These simulate trusted provider snapshots; they are not genuine sandbox purchases.
 - Five direct hosted checks passed: public registration disabled; anonymous access denied to admin, raw likes, memberships and calls.
@@ -53,3 +53,15 @@ Use Node 24 and the [local development guide](local-development.md). Edit locall
 This computer currently pushes using the authenticated **Fork** app. Open this repository in Fork, commit the intended files, and use **Push** for the current branch. Do not force-push or push unrelated tags. A CLI `git push` requires a separately configured GitHub credential helper; Fork's saved account is not automatically shared with terminal Git.
 
 Merging/pushing to `main` triggers deployment. Backend migrations and functions require their own verified operator deployment first; see the [deployment runbook](deployment.md). Never upload `.env.local`, fixture credentials or service/payment/TURN secrets.
+
+## Genuine sandbox billing verified
+
+Both `VITE_PAYMENTS_ENABLED` and server `PAYMENTS_ENABLED` are enabled on this invitation-only test deployment, with server `PAYMENTS_ENVIRONMENT=sandbox`. The server rejects live Stripe keys and uses PayPal's sandbox API exclusively.
+
+A separately created, non-admin tester completed its profile and purchased Gold (£9.99/month test amount) through Stripe Checkout using Stripe's published test card. The app received Gold from verified provider state. In-app cancellation stopped renewal and preserved paid access. An operator-issued full sandbox refund and immediate provider cancellation then returned the app to Free.
+
+The same tester subsequently approved Diamond (£19.99/month test amount) using an existing fictional PayPal sandbox buyer. A completed GBP sale was verified by the provider API, recorded in the application, and granted Diamond. In-app cancellation stopped PayPal renewal while preserving access through the verified paid period. No real funds moved. Both test subscriptions have renewal stopped.
+
+There can be a short interval between provider approval and settlement/webhook reconciliation. The billing return screen retries verification for a bounded period and offers manual Refresh billing status. It does not grant access from URL parameters. After confirmation it removes provider return parameters from the address bar.
+
+The owner created and controls the tester's password; it is not in Git or this document. Never share the owner/admin account with testers. To test as a different person, manually create an invited test account until email delivery is configured, or use the browser-local fictional demo without credentials.

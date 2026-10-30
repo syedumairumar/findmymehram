@@ -1,6 +1,6 @@
 # Payments and administration
 
-Status: the first admin UI and backend authorization are implemented. Authenticated `billing` and unsigned `billing-webhook` Edge Functions now create sandbox Checkout/PayPal subscriptions and reconcile signed provider events. Entitlement is applied only after a verified paid invoice or PayPal sale, never from a return URL. Sandbox API credentials, both providers’ monthly prices/plans and webhook registrations are configured. Checkout stays disabled until a genuine hosted sandbox purchase and lifecycle checks pass. Current tables are bounded to 100 rows and aggregate daily active/traffic metrics are not connected. Advanced reporting below remains an implementation requirement.
+Status: the first admin UI and backend authorization are implemented. Authenticated `billing` and unsigned `billing-webhook` Edge Functions now create sandbox Checkout/PayPal subscriptions and reconcile signed provider events. Entitlement is applied only after a verified paid invoice or PayPal sale, never from a return URL. Sandbox API credentials, both providers’ monthly prices/plans and webhook registrations are configured. Sandbox checkout is enabled for invited members. Genuine purchases, cancellations and Stripe refund are verified; additional lifecycle cases remain pending. Current tables are bounded to 100 rows and aggregate daily active/traffic metrics are not connected. Advanced reporting below remains an implementation requirement.
 
 ## Payment methods and products
 
@@ -91,7 +91,7 @@ The ignored `.paypal-sandbox-plans.json` stores non-secret provisioning checkpoi
 - PayPal webhook: `0FW16479HG784181F`, 11 subscribed billing/sale events.
 - Shared webhook URL: `https://nyhohhdleovhbxwafxpn.supabase.co/functions/v1/billing-webhook`.
 
-Actual sandbox APIs confirmed both monthly plans/prices are GBP 9.99/19.99 with the expected intervals. These are configuration checks, not completed purchases. No live credentials or payments are enabled.
+Actual sandbox APIs confirmed both monthly plans/prices are GBP 9.99/19.99 with the expected intervals. These configuration checks were followed by genuine hosted Gold/Stripe and Diamond/PayPal sandbox purchases. No live credentials or payments are enabled.
 
 The PayPal webhook provisioning command lists existing destinations before creating one, verifies requested event names against PayPal, and reuses the same matching URL on retry:
 
@@ -100,3 +100,5 @@ node scripts/setup-paypal-webhook.mjs https://nyhohhdleovhbxwafxpn.supabase.co/f
 ```
 
 It stores the resulting webhook ID in the ignored backend environment file. Copy only the required values into the provider’s encrypted server secret store; never into a `VITE_` variable.
+
+Verified lifecycle outcomes: Stripe Gold purchase → scheduled cancellation with paid access retained → full test refund and provider termination → Free; PayPal Diamond purchase → cancellation with verified paid access retained. Both providers’ renewal is stopped for the tester. This does not claim that real renewals, declines, 3DS, disputes or PayPal refunds were exercised end to end.
