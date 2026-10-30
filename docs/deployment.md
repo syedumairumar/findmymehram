@@ -7,7 +7,7 @@ Status: invitation-only hosted test deployment. The GitHub repository is https:/
 - Cloudflare Pages: `findmymehram`, connected to `syedumairumar/findmymehram`, production branch `main`.
 - Build: `npm run typecheck && npm test && npm run build`; output: `dist`; `NODE_VERSION=24`.
 - Assets and self-hosted fonts are served through the Pages CDN.
-- Production build variables now point to the dedicated test Supabase project using its public publishable key. `VITE_INVITE_ONLY=true`; password-reset email, calls, payments and both OAuth providers remain disabled pending integration. The ignored local `.env.local` is not uploaded. Branch previews have no backend variables and remain fictional demos.
+- Production build variables now point to the dedicated test Supabase project using its public publishable key. `VITE_INVITE_ONLY=true`; password-reset email, calls and both OAuth providers remain disabled pending integration. `VITE_PAYMENTS_ENABLED=true` enables sandbox checkout for invited members. The ignored local `.env.local` is not uploaded. Branch previews have no backend variables and remain fictional demos.
 - Supabase project: `nyhohhdleovhbxwafxpn`, London. Migrations `202610300001` (core), `202610300002` (calls) and `202610300003` (operator access) were applied in transactions through SQL Editor. `202610300004` (billing reconcile) was also applied transactionally in SQL Editor on 30 October 2026. The hosted project has no CLI migration-history table yet. Before the first CLI `db push`, verify schema equivalence and register those revisions with `supabase migration repair 202610300001 202610300002 202610300003 202610300004 --status applied --project-ref nyhohhdleovhbxwafxpn` against this exact project, to avoid replaying the schema.
 - Pushes to `main` trigger a new frontend build. Branch protection and automatic backend/function deployment are not configured yet. GitHub browser checks run separately and must be reviewed before handover.
 
@@ -75,7 +75,7 @@ Deployed `billing`, `billing-webhook`, `photo-upload`, `account-delete` and `cal
 
 The owner approved disabling the legacy JWT gateway check for these functions. Member handlers call Supabase Auth `getUser` and enforce verified email/enrolled TOTP; the external payment handler validates provider signatures. The matching `verify_jwt=false` entries are versioned in `supabase/config.toml`.
 
-`APP_ORIGINS` and `APP_URL` are the exact Pages origin. Server `PAYMENTS_ENABLED=false`, `PAYMENTS_ENVIRONMENT=sandbox` and `CALLS_ENABLED=false` keep unfinished integrations disabled. Stripe monthly price IDs are stored as function configuration. Sandbox provider secrets, plan references and both webhooks are now configured; genuine sandbox purchases and lifecycle verification remain a release gate. Do not enable frontend flags before provider runtime checks pass.
+`APP_ORIGINS` and `APP_URL` are the exact Pages origin. Server `PAYMENTS_ENABLED=true` with `PAYMENTS_ENVIRONMENT=sandbox` enables verified sandbox billing. `CALLS_ENABLED=false` keeps actual calls disabled. Stripe monthly price IDs are stored as function configuration. Sandbox provider secrets, plan references and both webhooks are now configured; both genuine purchases, both cancellations and a full Stripe refund have been verified. Renewal, decline, 3DS and dispute end-to-end cases remain outstanding. Keep live payment keys rejected and public registration disabled during the pilot.
 
 For future function releases after authenticating the CLI, use the exact test reference:
 
@@ -88,3 +88,5 @@ npx supabase functions deploy call-relay --project-ref nyhohhdleovhbxwafxpn
 ```
 
 Migration history must be reconciled against the actual hosted schema before the first CLI database push. Do not rerun migrations 001–004 in SQL Editor or use `db reset` on this project.
+
+The sandbox billing release was merged in PR #3 (`3aebbc0`), followed by the protected-route restoration fix in PR #4 (`24e4c9d`). Both passed GitHub checks and were deployed by Pages. Payment return URLs are preserved during session/profile restoration; the subsequent billing retry change clears provider return parameters after confirmed settlement.

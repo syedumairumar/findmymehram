@@ -39,3 +39,11 @@ If an Oracle VM is used: SSH keys only, no password/root SSH login, restricted a
 ## Current operational limitation
 
 Docker Desktop was reinstalled from the official Apple Silicon installer as version 4.97.0 after a disk-full failure. Its published SHA-256 and Docker Inc. code signature were verified; the engine and an ephemeral hello-world container passed. Existing non-project images, volumes and settings were preserved. The core Supabase stack is healthy and its published ports were verified as loopback-only. Optional Studio/meta/Edge services remain outside the lightweight local start.
+
+## Hosted advisor review — 30 October 2026
+
+Supabase Security Advisor reported zero errors, 26 warnings and eight informational suggestions after the billing migration. Twenty-five warnings identify intentionally callable `SECURITY DEFINER` RPCs. These provide curated operations while raw profile/like/billing tables remain inaccessible; their fixed search paths, explicit grants, identity/role/MFA/relationship checks and denial tests are security boundaries. This is an explicit review item, not a claim of a warning-free or externally audited database. Do not switch them to invoker or grant raw table access simply to silence the advisor.
+
+The remaining warning is disabled leaked-password screening. The hosted dashboard identifies this HaveIBeenPwned integration as Pro-only; it has not been enabled or upgraded on this zero-cost Free project. Unique passwords of at least 12 characters, verified email, secure password change, invitation-only registration and TOTP for administrators remain required. Before accepting public users, revisit breached-password screening and obtain an independent security review.
+
+All eight informational suggestions are RLS-enabled tables without direct client policies: blocks, memberships, payment_events, payments, profiles, reports, subscriptions and swipes. Their default-deny access is intentional; authenticated operations use guarded RPCs and service-only billing writes. Authorization suites verify ordinary members cannot write paid membership or payment/event state.
