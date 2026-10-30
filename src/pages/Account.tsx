@@ -858,7 +858,7 @@ export function SecurityPage() {
             {enrollment && (
               <div className="totp-enrollment">
                 <img
-                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.qr)}`}
+                  src={enrollment.qr}
                   alt="Scan this authenticator setup QR code"
                 />
                 <label>
