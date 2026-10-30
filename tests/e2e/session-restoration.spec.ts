@@ -24,7 +24,7 @@ test('a restored member keeps the billing return URL and retries payment verific
     }
     const values:Record<string,unknown>={
       my_profile:{id,name:'Fictional member',age:30,city:'Test city',profession:'Test profession',gender:'not specified',intent:'Marriage-minded',bio:'Test fixture',interests:[],languages:[],photo:''},
-      my_membership:{tier:billingSettled?'gold':'free',source:billingSettled?'stripe':'free',expires_at:null},my_matches:[],can_admin:false,
+      my_membership:{tier:billingSettled?'gold':'free',source:billingSettled?'stripe':'free',expires_at:null},my_matches:[],can_admin:false,has_admin_role:false,
     };
     if(name==='my_profile')await new Promise(resolve=>setTimeout(resolve,700));
     if(!(name! in values))throw new Error(`Unexpected test backend request: ${name}`);
