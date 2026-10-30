@@ -75,7 +75,7 @@ Deployed `billing`, `billing-webhook`, `photo-upload`, `account-delete` and `cal
 
 The owner approved disabling the legacy JWT gateway check for these functions. Member handlers call Supabase Auth `getUser` and enforce verified email/enrolled TOTP; the external payment handler validates provider signatures. The matching `verify_jwt=false` entries are versioned in `supabase/config.toml`.
 
-`APP_ORIGINS` and `APP_URL` are the exact Pages origin. Server `PAYMENTS_ENABLED=false`, `PAYMENTS_ENVIRONMENT=sandbox` and `CALLS_ENABLED=false` keep unfinished integrations disabled. Stripe monthly price IDs are stored as function configuration. Provider secrets/webhooks and actual sandbox purchases remain a separate release gate. Do not enable frontend flags before provider runtime checks pass.
+`APP_ORIGINS` and `APP_URL` are the exact Pages origin. Server `PAYMENTS_ENABLED=false`, `PAYMENTS_ENVIRONMENT=sandbox` and `CALLS_ENABLED=false` keep unfinished integrations disabled. Stripe monthly price IDs are stored as function configuration. Sandbox provider secrets, plan references and both webhooks are now configured; genuine sandbox purchases and lifecycle verification remain a release gate. Do not enable frontend flags before provider runtime checks pass.
 
 For future function releases after authenticating the CLI, use the exact test reference:
 

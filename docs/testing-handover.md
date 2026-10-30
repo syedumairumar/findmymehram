@@ -26,7 +26,7 @@ Real member matching/chat requires at least two invited adults who complete fict
 
 ## Remaining integrations
 
-- Genuine Stripe card and PayPal sandbox checkout, verified webhooks and subscription lifecycle. Checkout/webhook functions are in source; they stay disabled until `VITE_PAYMENTS_ENABLED=true`, function secrets, Stripe/PayPal webhooks and PayPal plan IDs are configured. The return URL still does not grant a tier.
+- Genuine Stripe card and PayPal sandbox checkout, verified webhooks and subscription lifecycle. Checkout/webhook functions are in source; they stay disabled until `VITE_PAYMENTS_ENABLED=true`, successful provider sandbox lifecycle tests are complete. Sandbox credentials, Stripe/PayPal webhooks and both providers’ monthly plans are configured; the server also requires `PAYMENTS_ENABLED=true`. The return URL still does not grant a tier.
 - Google and Facebook provider apps and callback verification.
 - Transactional verification/reset/invitation email. Reset email is visibly unavailable in the hosted pilot until delivery is configured.
 - Call relay credentials, actual audio/video tests on separate devices/networks. Calling source and authorization are implemented; it remains disabled and unverified for real media.
@@ -42,6 +42,7 @@ This is a test milestone, not a completed public/live service or legal complianc
 - Nineteen local billing database checks passed, covering duplicate checkout, event/lease concurrency, rollback, paid entitlement, cancellation and out-of-order reconciliation. These simulate trusted provider snapshots; they are not genuine sandbox purchases.
 - Five direct hosted checks passed: public registration disabled; anonymous access denied to admin, raw likes, memberships and calls.
 - Actual hosted operator login/TOTP and dashboard were verified by the owner and observed in the browser. Hosted demo matching/chat persistence was also checked directly.
+- Five deployed server handlers reject anonymous/disabled requests, and four member handlers reject foreign origins. Both providers’ actual sandbox APIs verified all four monthly prices/plans.
 - Homepage returned HTTP 200 with CSP, HSTS, frame protection, content-type protection and camera/microphone restricted to the app origin.
 - Docker's core development services remain healthy with published ports bound to loopback.
 

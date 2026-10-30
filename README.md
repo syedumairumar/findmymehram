@@ -8,7 +8,7 @@ An adults-only Pakistani/Indian dating and relationship web app, planned for mob
 
 The first application milestone is implemented: responsive landing/discovery, a labelled fictional demo, matching, persistent demo conversations, membership previews, profile editing, an admin dashboard, and a Supabase backend for real test accounts, matching, chat and TOTP two-factor authentication.
 
-The core backend has passed 31 direct authorization checks, plus 19 billing database checks and 27 unit tests, including real authenticator verification. The call screen, relay function and call authorization are implemented but actual media and provider setup remain unverified. Sandbox billing functions exist, but they stay disabled until provider secrets, webhooks and PayPal plan IDs are configured. OAuth, hosted transactional email and final launch policies remain outstanding. Their controls do not pretend to perform real calls or live payments.
+The core backend has passed 31 direct authorization checks, plus 19 billing database checks and 27 unit tests, including real authenticator verification. The call screen, relay function and call authorization are implemented but actual media and provider setup remain unverified. Sandbox billing functions exist, but provider credentials, webhooks and monthly plans are configured, while checkout stays disabled pending a genuine hosted purchase and lifecycle checks. OAuth, hosted transactional email and final launch policies remain outstanding. Their controls do not pretend to perform real calls or live payments.
 
 ## Hosted preview
 
