@@ -27,9 +27,9 @@ Real member matching/chat requires at least two invited adults who complete fict
 ## Remaining integrations
 
 - Additional provider renewal, declined/3DS payment, dispute and PayPal refund cases. The successful purchase/cancellation flows and Stripe full refund are verified; those do not substitute for every lifecycle scenario.
-- Google and Facebook provider apps and callback verification; both are disabled in the hosted project.
-- Transactional verification/reset/invitation email. Branded confirmation/recovery templates are prepared, but the hosted SMTP sender is not configured and reset email is visibly unavailable.
-- Cloudflare TURN credentials and actual audio/video tests on separate devices/networks. Calling source and authorization are implemented; it remains disabled and unverified for real media.
+- Google and Facebook provider credentials and the Meta callback are configured in Supabase; the Pages build flags have not yet been deployed, new sign-ups remain disabled, Google test-user access may need setup, and Meta remains in Development mode.
+- Transactional verification/reset/invitation email. Branded templates are prepared and Brevo SMTP settings are saved, but the test sender/phone verification and actual message delivery are unverified. Password-reset email remains disabled.
+- Cloudflare TURN credentials and the `call-relay` backend are configured. Calls remain disabled until frontend/backend deployment and two-device audio/video tests on separate networks.
 - Traffic collection, full account administration, server pagination/advanced reports, operational monitoring/backups and final launch policy review.
 
 This is a test milestone, not a completed public/live service or legal compliance certification.

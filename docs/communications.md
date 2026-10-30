@@ -12,12 +12,16 @@ WebRTC uses `iceTransportPolicy: "relay"` with ephemeral Cloudflare TURN credent
 
 Invitations are limited to ten per member per hour and one active call per participant. Calls ring for 45 seconds. Signals are removed on hang-up, or by a ten-minute cron after expiry; call metadata expires after one day. Database backups and provider metadata have separate retention requirements. Realtime events trigger fresh authorized reads; a polling fallback handles lost events. Production scale requires load testing, quota monitoring and further optimization.
 
+## Current hosted test-service state
+
+The test project has migration `202610300002`, the `call-relay` function and Cloudflare TURN key ID/token configured. The TURN application is `findmymehram-test`. Calling remains disabled with server `CALLS_ENABLED=false` and frontend `VITE_CALLS_ENABLED=false`; the OAuth/email code changes have not yet been deployed from the current branch. TURN/Realtime already has an active Cloudflare subscription: the first 1,000 GB/month is currently included, then usage is charged at $0.05/GB. Budget alerts do not cap usage. Do not treat this as unlimited free hosting. No two-device audio/video call has been verified.
+
 ## Configure the test service
 
 1. Apply `202610300002_call_authorization.sql` to the exact test project, after checking migration history. Ensure `pg_cron` and the `findmymehram-call-retention` job are active.
 2. Deploy `call-relay` to that project. Configure `APP_ORIGINS` with exact allowed frontend origins. Keep `CALLS_ENABLED=false` while preparing credentials.
-3. Create a Cloudflare TURN key in the owner's account. Set `CLOUDFLARE_TURN_KEY_ID` and `CLOUDFLARE_TURN_API_TOKEN` in Supabase's server secret store. Do not put them in `VITE_*` variables, Git or chat.
-4. Verify current free quota, billing controls and alerting before activation. Cloudflare currently documents a 1,000 GB free tier followed by usage charges; this is not unlimited free hosting. Do not enable paid plans or accept overages as part of a zero-cost test without the owner's specific approval. Keep the pilot invitation-only and monitor usage. [Cloudflare TURN pricing FAQ](https://developers.cloudflare.com/realtime/turn/faq/).
+3. A Cloudflare TURN key has been created and its `CLOUDFLARE_TURN_KEY_ID` and `CLOUDFLARE_TURN_API_TOKEN` are stored in Supabase's server secret store. Do not put them in `VITE_*` variables, Git or chat.
+4. Cloudflare Realtime is already subscribed for this account. The documented 1,000 GB/month allowance is followed by usage charges; this is not unlimited free hosting, and budget alerts do not cap usage. Keep the pilot invitation-only and monitor usage. [Cloudflare TURN pricing FAQ](https://developers.cloudflare.com/realtime/turn/faq/).
 5. Set server `CALLS_ENABLED=true` and frontend `VITE_CALLS_ENABLED=true` only for the configured test environment. Redeploy the frontend. Both settings must be enabled.
 6. Test with two invited adults on separate browsers/devices and networks. Each tester grants their own microphone/camera permission directly. Test audio/video, decline/no answer, mute/camera controls, autoplay restrictions, denied permissions, network interruption, hang-up, expiry, blocking and suspension. Confirm tracks stop and the browser's recording indicator clears.
 7. Confirm an unrelated account cannot read call/signaling records or obtain relay credentials. Verify retention and quota usage. Keep the integration labelled unverified until the real media tests pass.
