@@ -142,7 +142,7 @@ const navItems = [
 ] as const;
 function Shell({ children }: { children: ReactNode }) {
   const a = useApp();
-  if (!a.ready) return <div className="loading">Getting things ready…</div>;
+  if (!a.ready || !a.profileReady) return <div className="loading">Getting things ready…</div>;
   if (a.mode === "guest") return <Navigate to="/auth" replace />;
   if (
     a.mode === "backend" &&
