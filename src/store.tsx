@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import type { ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
@@ -21,6 +22,7 @@ interface Store {
   matches: Match[];
   admin: boolean;
   ready: boolean;
+  profileReady: boolean;
   notice: string;
   notify: (value: string) => void;
   startDemo: () => void;
@@ -60,8 +62,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [matches, setMatches] = useState<Match[]>(demo?.matches ?? []),
     [admin, setAdmin] = useState(false),
     [ready, setReady] = useState(!supabase),
+    [loadedUserId, setLoadedUserId] = useState<string | null>(null),
     [notice, notify] = useState("");
+  const refreshGeneration = useRef(0);
+  const sessionUserId = useRef<string | null>(null);
   const mode = demo ? "demo" : user ? "backend" : "guest";
+  const profileReady = mode !== "backend" || loadedUserId === user?.id;
   const setDemo = useCallback((value: DemoState) => {
     setDemoState(value);
     localStorage.setItem("mehram-demo-v1", JSON.stringify(value));
@@ -75,6 +81,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [],
   );
   const refresh = useCallback(async () => {
+    const generation = ++refreshGeneration.current;
     if (demo) {
       setMe(demo.profile);
       setMatches(demo.matches);
@@ -88,37 +95,55 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAdmin(false);
       return;
     }
-    const [p, m, ms, a] = await Promise.all([
-      rpc<Profile | null>("my_profile"),
-      rpc<Membership>("my_membership"),
-      rpc<Match[]>("my_matches"),
-      rpc<boolean>("can_admin"),
-    ]);
-    setMe(p ? await hydrate(p) : null);
-    setMembership(m);
-    setMatches(
-      await Promise.all(
-        ms.map(async (x) => ({ ...x, profile: await hydrate(x.profile) })),
-      ),
-    );
-    setAdmin(a);
+    try {
+      const [p, m, ms, a] = await Promise.all([
+        rpc<Profile | null>("my_profile"),
+        rpc<Membership>("my_membership"),
+        rpc<Match[]>("my_matches"),
+        rpc<boolean>("can_admin"),
+      ]);
+      const [profile, hydratedMatches] = await Promise.all([
+        p ? hydrate(p) : null,
+        Promise.all(
+          ms.map(async (x) => ({ ...x, profile: await hydrate(x.profile) })),
+        ),
+      ]);
+      if (generation !== refreshGeneration.current) return;
+      setMe(profile);
+      setMembership(m);
+      setMatches(hydratedMatches);
+      setAdmin(a);
+    } finally {
+      if (generation === refreshGeneration.current) setLoadedUserId(user.id);
+    }
   }, [demo, user, hydrate]);
   useEffect(() => {
     if (!supabase) return;
     let alive = true;
+    function applyUser(next: User | null) {
+      if (sessionUserId.current !== (next?.id ?? null)) {
+        ++refreshGeneration.current;
+        sessionUserId.current = next?.id ?? null;
+        setLoadedUserId(null);
+        setMe(null);
+        setMatches([]);
+        setAdmin(false);
+        setMembership({tier: "free", source: "free", expires_at: null});
+      }
+      setUser(next);
+      setReady(true);
+    }
     supabase.auth.getSession().then(({ data, error }) => {
       if (alive) {
         if (error) notify(message(error));
-        setUser(data.session?.user ?? null);
-        setReady(true);
+        applyUser(data.session?.user ?? null);
       }
     });
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_e, s) => {
       if (alive) {
-        setUser(s?.user ?? null);
-        setReady(true);
+        applyUser(s?.user ?? null);
       }
     });
     return () => {
@@ -311,6 +336,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         matches,
         admin,
         ready,
+        profileReady,
         notice,
         notify,
         startDemo,
