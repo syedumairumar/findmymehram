@@ -6,7 +6,7 @@ The app contains email/password registration, verified-email login, password rec
 
 The hosted Supabase project has email confirmation enabled, public registration disabled, manual identity linking disabled, and Google and Facebook provider credentials configured. Custom SMTP settings have been saved through Brevo with a test sender address. Brevo sender/phone verification and actual delivery have not been confirmed, so hosted confirmation and password-reset email are not yet verified. Keep password-reset UI disabled until delivery is checked. The Pages deployment has not yet been updated with the current OAuth-enabled source and build flags.
 
-New OAuth users are directed to profile setup. The first profile save now requires an 18+ attestation and acceptance of the test Terms/Privacy Notice in the UI and database. Apply migration `202610300005_oauth_signup_consent.sql` to the hosted test project before allowing OAuth-created users to complete profiles.
+New OAuth users are directed to profile setup. The first profile save requires an 18+ attestation and acceptance of the test Terms/Privacy Notice in the UI and database. Migration `202610300005_oauth_signup_consent.sql` was applied manually to the hosted test project on 30 October 2026 after confirming it was absent. A read-only database check verified that only authenticated users can execute the consent wrapper and that members cannot execute the legacy function. The hosted database migration history has not been reconciled with the local Supabase CLI; reconcile it before using `supabase db push` or `supabase db reset`, and do not reapply the migration.
 
 ## Exact URLs
 
