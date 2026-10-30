@@ -28,7 +28,7 @@ import {
   CircleHelp,
 } from "lucide-react";
 import { useApp } from "./store";
-import { backend, message, supabase } from "./lib/supabase";
+import { backend, message, rpc, supabase } from "./lib/supabase";
 import { portraits } from "./lib/demo";
 const Discover = lazy(() => import("./pages/Discover"));
 const Messages = lazy(() => import("./pages/Messages"));
@@ -48,6 +48,7 @@ const PolicyPage = lazy(() =>
   import("./pages/Account").then((m) => ({ default: m.PolicyPage })),
 );
 const Admin = lazy(() => import("./pages/Admin"));
+const inviteOnly = import.meta.env.VITE_INVITE_ONLY === "true";
 
 export function Brand() {
   return (
@@ -83,7 +84,10 @@ function Header() {
               <Link className="login-link" to="/auth">
                 Log in
               </Link>
-              <Link className="button primary small" to="/auth?mode=signup">
+              <Link
+                className="button primary small"
+                to={inviteOnly ? "/auth" : "/auth?mode=signup"}
+              >
                 Find your person <ArrowRight size={15} />
               </Link>
             </>
@@ -143,7 +147,7 @@ function Shell({ children }: { children: ReactNode }) {
   if (
     a.mode === "backend" &&
     !a.me &&
-    !["/profile", "/security"].includes(location.pathname)
+    !["/profile", "/security", "/admin"].includes(location.pathname)
   )
     return <Navigate to="/profile" replace />;
   return (
@@ -200,8 +204,9 @@ function Shell({ children }: { children: ReactNode }) {
               Demo mode · Fictional profiles and browser-local data. No real
               payments or messages.
             </span>
-            <Link to="/auth?mode=signup">
-              Create a real account <ArrowRight size={13} />
+            <Link to={inviteOnly ? "/auth" : "/auth?mode=signup"}>
+              {inviteOnly ? "Invited tester? Log in" : "Create a real account"}{" "}
+              <ArrowRight size={13} />
             </Link>
           </div>
         )}
@@ -252,7 +257,13 @@ function Landing() {
             <div className="hero-actions">
               <Link
                 className="button primary"
-                to={a.mode === "guest" ? "/auth?mode=signup" : "/discover"}
+                to={
+                  a.mode === "guest"
+                    ? inviteOnly
+                      ? "/auth"
+                      : "/auth?mode=signup"
+                    : "/discover"
+                }
               >
                 Find your person <ArrowRight size={18} />
               </Link>
@@ -434,6 +445,8 @@ function Auth() {
     signup = mode === "signup",
     reset = mode === "reset",
     update = mode === "update";
+  const resetAvailable =
+    import.meta.env.VITE_PASSWORD_RESET_ENABLED !== "false";
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [adult, setAdult] = useState(false),
@@ -450,6 +463,14 @@ function Auth() {
     setBusy(true);
     setError("");
     try {
+      if (signup && inviteOnly)
+        throw new Error(
+          "This private test is invite-only. Use the login details provided by the owner, or explore the demo.",
+        );
+      if (reset && !resetAvailable)
+        throw new Error(
+          "Password-reset email is not available in this test yet. Contact the test owner for help.",
+        );
       const client = backend();
       if (signup) {
         if (a.demo) await a.signOut();
@@ -491,10 +512,14 @@ function Auth() {
         });
         if (error) throw error;
         const { data } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+        const operator = await rpc<boolean>("has_admin_role");
         nav(
-          data?.nextLevel === "aal2" && data.currentLevel !== "aal2"
+          (operator && data?.currentLevel !== "aal2") ||
+            (data?.nextLevel === "aal2" && data.currentLevel !== "aal2")
             ? "/security?verify=true"
-            : "/discover",
+            : operator
+              ? "/admin"
+              : "/discover",
         );
       }
     } catch (e) {
@@ -575,6 +600,18 @@ function Auth() {
             </span>
           </div>
         )}
+        {signup && inviteOnly && (
+          <div className="info-box">
+            This private test is invite-only. Use the login details provided by
+            the owner, or explore the demo.
+          </div>
+        )}
+        {reset && !resetAvailable && (
+          <div className="info-box">
+            Password-reset email is not available in this test yet. Contact the
+            test owner for help.
+          </div>
+        )}
         {error && (
           <div className="error-box" role="alert">
             {error}
@@ -645,7 +682,12 @@ function Auth() {
               </label>
             </>
           )}
-          <button className="button primary full" disabled={busy}>
+          <button
+            className="button primary full"
+            disabled={
+              busy || (signup && inviteOnly) || (reset && !resetAvailable)
+            }
+          >
             {busy
               ? "One moment…"
               : signup

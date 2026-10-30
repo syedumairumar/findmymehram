@@ -7,9 +7,11 @@ Status: deployment design. The GitHub repository is https://github.com/syedumair
 - Cloudflare Pages: `findmymehram`, connected to `syedumairumar/findmymehram`, production branch `main`.
 - Build: `npm run typecheck && npm test && npm run build`; output: `dist`; `NODE_VERSION=24`.
 - Assets and self-hosted fonts are served through the Pages CDN.
-- No hosted Supabase public variables are set in the current frontend. The ignored local `.env.local` is not uploaded.
-- Supabase project: `nyhohhdleovhbxwafxpn`, London. Core migration `202610300001` was applied in a transaction through SQL Editor. Before the first CLI `db push`, verify schema equivalence and register that revision with `supabase migration repair 202610300001 --status applied` against this exact project, to avoid replaying the schema.
+- Production build variables now point to the dedicated test Supabase project using its public publishable key. `VITE_INVITE_ONLY=true`; password-reset email, calls, payments and both OAuth providers remain disabled pending integration. The ignored local `.env.local` is not uploaded. Branch previews have no backend variables and remain fictional demos.
+- Supabase project: `nyhohhdleovhbxwafxpn`, London. Migrations `202610300001` (core), `202610300002` (calls) and `202610300003` (operator access) were applied in transactions through SQL Editor. Before the first CLI `db push`, verify schema equivalence and register those revisions with `supabase migration repair 202610300001 202610300002 202610300003 --status applied --project-ref nyhohhdleovhbxwafxpn` against this exact project, to avoid replaying the schema.
 - Pushes to `main` trigger a new frontend build. Branch protection and hosted backend/function deployment are not configured yet. GitHub browser checks run separately and must be reviewed before handover.
+
+Hosted Auth configuration was checked: public sign-ups, anonymous sign-ins and manual linking are off; email confirmation and TOTP are on; minimum passwords are 12 characters; secure password change is on; email OTP expiry is 600 seconds. Site URL is the Pages origin. Redirects are restricted to `/profile`, `/auth?mode=update` and `/security` on that origin. Five direct hosted checks verified disabled sign-ups and anonymous denial for admin, swipes, memberships and calls. The designated operator was created by the owner and assigned an owner role; actual operator login/TOTP remains to be verified through the hosted app.
 
 ## Environments
 

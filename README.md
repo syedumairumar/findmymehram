@@ -12,7 +12,7 @@ The core backend has passed 29 direct authorization checks, including real authe
 
 ## Hosted preview
 
-Open https://findmymehram.pages.dev/ and choose **Explore the demo**. This deployment is a browser-local fictional demo: it does not collect real registrations, place calls or charge money. Account services will be connected for an invited test pilot after configuration and verification.
+Open https://findmymehram.pages.dev/ and choose **Explore the demo**. The fictional demo is browser-local and does not place calls or charge money. A dedicated hosted backend is configured for invited test accounts; public sign-ups are disabled, and the operator must complete genuine TOTP before using admin. Hosted operator login is still being verified. OAuth, transactional emails and actual payment/call provider tests remain pending.
 
 ## Run locally
 

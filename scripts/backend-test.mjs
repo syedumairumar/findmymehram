@@ -326,10 +326,15 @@ try {
     code: totp(enrolled.data.totp.secret),
   });
   if (verified.error) throw verified.error;
+  const removedProfile = await service
+    .from("profiles")
+    .delete()
+    .eq("id", outsider.id);
+  if (removedProfile.error) throw removedProfile.error;
   const overview = await outsider.client.rpc("admin_overview");
   check(
     !overview.error && typeof overview.data.total === "number",
-    "owner with genuine verified TOTP can access admin",
+    "owner with genuine verified TOTP can administer without a dating profile",
   );
   await outsider.client.auth.signOut();
   await outsider.client.auth.signInWithPassword({
