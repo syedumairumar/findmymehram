@@ -54,7 +54,9 @@ Browser specs are in `tests/e2e`. Install their browsers with `npx playwright in
 
 ## External dependencies
 
-Google/Facebook remain disabled until provider applications and exact callbacks are configured. Hosted verification/recovery needs an approved transactional SMTP sender. Genuine PayPal/card checkout needs function secrets, Stripe/PayPal webhook URLs and `VITE_PAYMENTS_ENABLED=true`; `npm run paypal:plans` can create sandbox plans after PayPal credentials are in `supabase/.env.local`. Audio/video calls remain a separate integration. Demo tier switching and call controls do not constitute those integrations.
+Follow the [authentication guide](authentication.md) to configure Google/Facebook applications, exact callbacks, hosted SMTP and branded email templates. Local email previews use Inbucket; hosted signup/reset email needs an authenticated sender. OAuth stays disabled until provider credentials are configured. Google/Facebook-created profiles also require the consent migration before new signups are enabled.
+
+The [communications guide](communications.md) documents the implemented relay-only audio/video call system. Actual hosted calls still need Cloudflare TURN credentials, server/frontend feature flags and two-device tests. Demo call controls do not place real calls. Genuine PayPal/card checkout needs function secrets, Stripe/PayPal webhook URLs and `VITE_PAYMENTS_ENABLED=true`; `npm run paypal:plans` can create sandbox plans after PayPal credentials are in `supabase/.env.local`.
 
 Server-only placeholders are in `supabase/.env.example`. Keep real values in ignored `supabase/.env.local` or hosted secret settings, never in `VITE_` variables or Git.
 

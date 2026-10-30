@@ -56,6 +56,7 @@ try {
         photo: "",
         gender: "not specified",
         birth_date: "1995-01-01",
+        terms_accepted: true,
       },
     });
     if (profile.error) throw profile.error;

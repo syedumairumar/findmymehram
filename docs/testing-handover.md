@@ -27,9 +27,9 @@ Real member matching/chat requires at least two invited adults who complete fict
 ## Remaining integrations
 
 - Additional provider renewal, declined/3DS payment, dispute and PayPal refund cases. The successful purchase/cancellation flows and Stripe full refund are verified; those do not substitute for every lifecycle scenario.
-- Google and Facebook provider apps and callback verification.
-- Transactional verification/reset/invitation email. Reset email is visibly unavailable in the hosted pilot until delivery is configured.
-- Call relay credentials, actual audio/video tests on separate devices/networks. Calling source and authorization are implemented; it remains disabled and unverified for real media.
+- Google and Facebook provider apps and callback verification; both are disabled in the hosted project.
+- Transactional verification/reset/invitation email. Branded confirmation/recovery templates are prepared, but the hosted SMTP sender is not configured and reset email is visibly unavailable.
+- Cloudflare TURN credentials and actual audio/video tests on separate devices/networks. Calling source and authorization are implemented; it remains disabled and unverified for real media.
 - Traffic collection, full account administration, server pagination/advanced reports, operational monitoring/backups and final launch policy review.
 
 This is a test milestone, not a completed public/live service or legal compliance certification.

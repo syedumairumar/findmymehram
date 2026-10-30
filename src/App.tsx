@@ -49,6 +49,9 @@ const PolicyPage = lazy(() =>
 );
 const Admin = lazy(() => import("./pages/Admin"));
 const inviteOnly = import.meta.env.VITE_INVITE_ONLY === "true";
+const googleAuthEnabled = import.meta.env.VITE_GOOGLE_AUTH_ENABLED === "true";
+const facebookAuthEnabled =
+  import.meta.env.VITE_FACEBOOK_AUTH_ENABLED === "true";
 
 export function Brand() {
   return (
@@ -142,12 +145,40 @@ const navItems = [
 ] as const;
 function Shell({ children }: { children: ReactNode }) {
   const a = useApp();
+  const loc = useLocation();
+  const nav = useNavigate();
+  useEffect(() => {
+    if (a.mode !== "backend" || !a.user) return;
+    let alive = true;
+    async function enforceAdminMfa() {
+      try {
+        const operator = await rpc<boolean>("has_admin_role");
+        if (!alive || !operator) return;
+        const { data, error } =
+          await backend().auth.mfa.getAuthenticatorAssuranceLevel();
+        if (error) throw error;
+        if (
+          alive &&
+          data?.nextLevel === "aal2" &&
+          data.currentLevel !== "aal2" &&
+          loc.pathname !== "/security"
+        )
+          nav("/security?verify=true", { replace: true });
+      } catch (e) {
+        if (alive) a.notify(message(e));
+      }
+    }
+    void enforceAdminMfa();
+    return () => {
+      alive = false;
+    };
+  }, [a.mode, a.user?.id, loc.pathname, nav]);
   if (!a.ready || !a.profileReady) return <div className="loading">Getting things ready…</div>;
   if (a.mode === "guest") return <Navigate to="/auth" replace />;
   if (
     a.mode === "backend" &&
     !a.me &&
-    !["/profile", "/security", "/admin"].includes(location.pathname)
+    !["/profile", "/security", "/admin"].includes(loc.pathname)
   )
     return <Navigate to="/profile" replace />;
   return (
@@ -531,6 +562,10 @@ function Auth() {
   async function social(provider: "google" | "facebook") {
     setError("");
     try {
+      if (signup && (!adult || !terms))
+        throw new Error(
+          "Confirm you are 18 or older and accept the test terms before continuing.",
+        );
       if (
         import.meta.env[`VITE_${provider.toUpperCase()}_AUTH_ENABLED`] !==
         "true"
@@ -709,16 +744,27 @@ function Auth() {
               <button
                 className="button outline"
                 onClick={() => void social("google")}
+                disabled={!googleAuthEnabled}
               >
                 <b className="google-g">G</b> Google
+                {!googleAuthEnabled && <span> · setup pending</span>}
               </button>
               <button
                 className="button outline"
                 onClick={() => void social("facebook")}
+                disabled={!facebookAuthEnabled}
               >
                 <b className="facebook-f">f</b> Facebook
+                {!facebookAuthEnabled && <span> · setup pending</span>}
               </button>
             </div>
+            {inviteOnly && (
+              <div className="info-box">
+                New social accounts cannot be created while this test is
+                invitation-only. Existing invited accounts can sign in once the
+                provider is configured.
+              </div>
+            )}
             <p className="auth-switch">
               {signup
                 ? "Already part of the community?"

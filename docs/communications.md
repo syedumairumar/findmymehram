@@ -25,3 +25,5 @@ Invitations are limited to ten per member per hour and one active call per parti
 Local database checks run through `npm run backend:test` and include call authorization. `npm run functions:check` checks all server entry points with pinned Deno. The local Edge runtime remains an optional service requiring a healthy compatible image; the core local backend does not start it automatically.
 
 Provider references: [TURN credential generation](https://developers.cloudflare.com/realtime/turn/generate-credentials/), [WebRTC configuration](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection).
+
+Authentication and account recovery configuration is tracked in the [authentication guide](authentication.md).
