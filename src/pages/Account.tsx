@@ -18,6 +18,7 @@ import {
 import { useApp } from "../store";
 import { backend, message, rpc } from "../lib/supabase";
 import { canSeeLikes, download } from "../lib/domain";
+import { assertCheckoutUrl } from "../lib/billing";
 import type { Profile, Tier } from "../types";
 
 export function Likes() {
@@ -179,6 +180,26 @@ export function MembershipPage() {
     nav = useNavigate();
   const [selected, setSelected] = useState<Tier | null>(null),
     [busy, setBusy] = useState(false);
+  const paymentsEnabled = import.meta.env.VITE_PAYMENTS_ENABLED === "true";
+  const [billing, setBilling] = useState<{
+    provider: string; tier: string; status: string; paid_until: string | null;
+    cancel_at_period_end: boolean; environment: string;
+  } | null>(null);
+  const [billingError, setBillingError] = useState("");
+  async function loadBilling(sync = false) {
+    if (a.mode !== "backend" || !paymentsEnabled || !a.me) return;
+    setBusy(true);
+    try {
+      const {data,error} = await backend().functions.invoke("billing", {body:{action:sync ? "sync" : "status"}});
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setBilling(data?.subscription ?? null);
+      setBillingError("");
+      if (sync) await a.refresh();
+    } catch(e) {setBillingError(message(e));}
+    finally {setBusy(false);}
+  }
+  useEffect(() => {void loadBilling(new URLSearchParams(location.search).get("checkout") === "pending");}, [a.mode, a.me?.id]);
   async function checkout(provider: "stripe" | "paypal") {
     if (!selected || selected === "free") return;
     if (a.mode === "demo") {
@@ -201,17 +222,7 @@ export function MembershipPage() {
       if (error) throw error;
       if (!data?.url)
         throw new Error(data?.error ?? "Checkout could not start.");
-      const u = new URL(data.url);
-      if (
-        ![
-          "checkout.stripe.com",
-          "www.sandbox.paypal.com",
-          "sandbox.paypal.com",
-        ].includes(u.hostname) ||
-        u.protocol !== "https:"
-      )
-        throw new Error("Unexpected checkout destination");
-      location.assign(u.href);
+      location.assign(assertCheckoutUrl(data.url));
     } catch (e) {
       a.notify(message(e));
     } finally {
@@ -313,11 +324,32 @@ export function MembershipPage() {
         require clear renewal terms and an easy cancellation route before
         launch.
       </p>
-      {a.mode === "backend" && (
+      {a.mode === "backend" && <section className="panel" aria-label="Your billing status">
+        <h2>Your sandbox billing</h2>
+        {!paymentsEnabled ? <p>Sandbox payments are awaiting provider setup and verified checkout tests.</p> : <>
+          {billingError && <div className="error-box" role="alert">{billingError}</div>}
+          {billing ? <dl className="billing-details">
+            <dt>Plan</dt><dd>{billing.tier} · {billing.environment}</dd>
+            <dt>Provider</dt><dd>{billing.provider}</dd>
+            <dt>Subscription</dt><dd>{billing.status}{billing.cancel_at_period_end ? " · renewal stopped" : ""}</dd>
+            <dt>Verified paid access</dt><dd>{billing.paid_until ? new Date(billing.paid_until).toLocaleString() : "No confirmed paid period"}</dd>
+          </dl> : <p>No sandbox subscription yet. Approval and return pages do not grant premium access; the server verifies settlement.</p>}
+          <button className="button outline" disabled={busy} onClick={() => void loadBilling(true)}><RefreshCw size={16}/> Refresh billing status</button>
+        </>}
+      </section>}
+      {a.mode === "backend" && paymentsEnabled && billing && !["cancelled", "expired"].includes(billing.status) && (
         <button
           className="button outline"
+          disabled={busy}
           onClick={async () => {
+            if (!window.confirm("Stop this sandbox subscription renewing? Verified paid access continues until its paid-through date.")) return;
+            setBusy(true);
             try {
+              if (import.meta.env.VITE_PAYMENTS_ENABLED !== "true") {
+                throw new Error(
+                  "Sandbox cancellation needs the payment server and provider credentials.",
+                );
+              }
               const { data, error } = await backend().functions.invoke(
                 "billing",
                 { body: { action: "cancel" } },
@@ -328,9 +360,10 @@ export function MembershipPage() {
                 "Cancellation requested. Access continues to the verified paid-through date.",
               );
               await a.refresh();
+              await loadBilling();
             } catch (e) {
               a.notify(message(e));
-            }
+            } finally {setBusy(false);}
           }}
         >
           Cancel sandbox subscription

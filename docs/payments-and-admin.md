@@ -1,12 +1,14 @@
 # Payments and administration
 
-Status: the first admin UI and backend authorization are implemented. The real portal requires a server-granted role and verified TOTP; its fictional demo uses labelled sample data. Current tables are bounded to 100 rows and aggregate daily active/traffic metrics are not connected. Genuine provider checkout, subscription lifecycle/webhooks and advanced reporting below remain implementation requirements.
+Status: the first admin UI and backend authorization are implemented. Authenticated `billing` and unsigned `billing-webhook` Edge Functions now create sandbox Checkout/PayPal subscriptions and reconcile signed provider events. Entitlement is applied only after a verified paid invoice or PayPal sale, never from a return URL. Sandbox API credentials, both providers’ monthly prices/plans and webhook registrations are configured. Checkout stays disabled until a genuine hosted sandbox purchase and lifecycle checks pass. Current tables are bounded to 100 rows and aggregate daily active/traffic metrics are not connected. Advanced reporting below remains an implementation requirement.
 
 ## Payment methods and products
 
 Use PayPal Subscriptions in its sandbox for PayPal-wallet recurring subscriptions. Use Stripe sandbox Checkout/Billing for a clear credit/debit-card checkout that does not require the tester to have a PayPal account. Do not assume PayPal guest card subscriptions are universally available; eligibility and funding methods vary. A provider abstraction should keep internal tiers independent of provider identifiers.
 
 Create monthly Gold and Diamond sandbox products/prices in GBP, with obvious test labels and editable configuration. Select nominal sandbox prices before implementation; they are not final live pricing. Free membership never requires checkout. Annual billing is outside the initial scope unless separately requested.
+
+The owner's Stripe test sandbox already contains `[TEST] Find My Mehram Gold` at £9.99/month (`price_1UWHlbDRvR1eHPLyBjViOlUb`) and `[TEST] Find My Mehram Diamond` at £19.99/month. The Diamond price is `price_1UWHmxDRvR1eHPLyp3KJB8Oq`; both price references are configured in the hosted function settings. A dedicated PayPal sandbox app named **FindMyMehram Test** is configured with Subscriptions enabled and its API credentials/plan IDs in encrypted server secrets. Do not paste those secrets into chat or Git. `npm run paypal:plans` creates the two GBP monthly plans with a local checkpoint manifest and provider idempotency once `supabase/.env.local` has the PayPal client credentials.
 
 Provider-hosted payment components collect payment details. The application must not receive/store raw card numbers or CVV. Show only the minimal provider references/payment status needed for support. Use provider-issued test cards and PayPal sandbox buyer accounts; never ask testers to enter a real card into the test release.
 
@@ -68,3 +70,33 @@ The portal offers comprehensive operational visibility appropriate to each role.
 Stripe lists online dating/matchmaking as a restricted category and jurisdiction-specific restrictions may apply. Obtain the actual merchant provider's approval for the business and target markets before enabling live payments. PayPal also requires account eligibility, live onboarding and applicable policy compliance. Successful sandbox payments do not establish live eligibility. [Stripe restricted businesses](https://stripe.com/gb/legal/restricted-businesses).
 
 Use separate live credentials, products/plans, callback URLs and webhook verification settings; verify the complete transition using the deployment runbook. Never silently switch the publicly shared test URL into charging real money.
+
+## Implemented billing policy
+
+The server accepts sandbox credentials only. It validates configured price/plan currency, amount and monthly interval before creating checkout. An internal reservation prevents overlapping Stripe/PayPal subscriptions; retries reuse that reservation and provider idempotency key. An unresolved provider request stays reserved until reconciled, rather than silently allowing a second charge.
+
+Webhook signatures are verified before reconciliation. A service-only database lease serializes snapshots, and event receipt, payment rows and membership commit atomically. A stale or historical subscription cannot overwrite a newer entitlement. Member requests cannot write payment data or invoke reconciliation RPCs.
+
+Stripe access requires a settled invoice and paid, non-disputed charge matching the configured price. PayPal access requires a completed sale for the configured monthly plan. Activation or a future billing date alone never grants access. A failed renewal does not extend coverage; full refunds/disputes remove the affected coverage. Cancellation preserves only the verified paid period. Changes of plan/provider wait until that period ends. PayPal coverage is one calendar month from the verified sale timestamp; confirm renewal timing in the genuine sandbox before enabling checkout.
+
+Run `npm test`, `npm run backend:test`, `npm run backend:billing-test` and `npm run functions:check`. Current checks cover settlement decisions and database authorization/concurrency. Provider HTTP delivery, actual cancellation/refund and full sandbox purchases still require end-to-end verification.
+
+The ignored `.paypal-sandbox-plans.json` stores non-secret provisioning checkpoints. Keep it to rerun provisioning safely. A request with an unknown result older than five hours stops for manual reconciliation instead of risking duplicate products/plans.
+
+## Sandbox references verified on 30 October 2026
+
+- Stripe Gold: `price_1UWHlbDRvR1eHPLyBjViOlUb`; Diamond: `price_1UWHmxDRvR1eHPLyp3KJB8Oq`.
+- PayPal Gold: `P-8PK001211Y4993121NLSM5LY`; Diamond: `P-5L526331DM983532CNLSM5MA`.
+- Stripe destination: `we_1UWJD6DRvR1eHPLyW9IRL2Kp`, snapshot payloads with API `2026-09-30.endive`, 10 subscribed billing events. Provider object reads use pinned API `2024-06-20`.
+- PayPal webhook: `0FW16479HG784181F`, 11 subscribed billing/sale events.
+- Shared webhook URL: `https://nyhohhdleovhbxwafxpn.supabase.co/functions/v1/billing-webhook`.
+
+Actual sandbox APIs confirmed both monthly plans/prices are GBP 9.99/19.99 with the expected intervals. These are configuration checks, not completed purchases. No live credentials or payments are enabled.
+
+The PayPal webhook provisioning command lists existing destinations before creating one, verifies requested event names against PayPal, and reuses the same matching URL on retry:
+
+```sh
+node scripts/setup-paypal-webhook.mjs https://nyhohhdleovhbxwafxpn.supabase.co/functions/v1/billing-webhook
+```
+
+It stores the resulting webhook ID in the ignored backend environment file. Copy only the required values into the provider’s encrypted server secret store; never into a `VITE_` variable.

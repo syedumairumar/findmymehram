@@ -20,7 +20,9 @@
     "backend:env": "node scripts/local-env.mjs",
     "backend:seed": "node scripts/seed-local.mjs",
     "functions:serve": "supabase functions serve --env-file supabase/.env.local",
-    "functions:check": "node scripts/check-functions.mjs"
+    "functions:check": "node scripts/check-functions.mjs",
+    "paypal:plans": "node scripts/setup-paypal-plans.mjs",
+    "backend:billing-test": "node scripts/billing-backend-test.mjs"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "5.3.0",

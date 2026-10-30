@@ -1,0 +1,20 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+const entries=readFileSync('supabase/.env.local','utf8').split('\n').filter(l=>l.includes('=')&&!l.trim().startsWith('#')).map(l=>{const i=l.indexOf('=');return [l.slice(0,i).trim(),l.slice(i+1).trim()];});
+const env=Object.fromEntries(entries),url=new URL(process.argv[2]??'');
+if(url.protocol!=='https:'||!url.hostname.endsWith('.supabase.co')||url.pathname!=='/functions/v1/billing-webhook'||url.username||url.password||url.search)throw new Error('Supply the exact HTTPS Supabase test webhook URL.');
+if(!env.PAYPAL_CLIENT_ID||!env.PAYPAL_CLIENT_SECRET)throw new Error('Configure sandbox client credentials first.');
+const root='https://api-m.sandbox.paypal.com';
+const response=await fetch(root+'/v1/oauth2/token',{method:'POST',headers:{Authorization:`Basic ${Buffer.from(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_CLIENT_SECRET}`).toString('base64')}`,'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=client_credentials',signal:AbortSignal.timeout(15000)});
+const auth=await response.json();if(!response.ok||!auth.access_token)throw new Error('Sandbox authentication failed.');
+async function request(path,body){const r=await fetch(root+path,{method:body?'POST':'GET',headers:{Authorization:`Bearer ${auth.access_token}`,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(15000)});if(!r.ok)throw new Error(`PayPal sandbox webhook request failed (${r.status}).`);return r.json();}
+const events=['BILLING.SUBSCRIPTION.CREATED','BILLING.SUBSCRIPTION.ACTIVATED','BILLING.SUBSCRIPTION.UPDATED','BILLING.SUBSCRIPTION.SUSPENDED','BILLING.SUBSCRIPTION.CANCELLED','BILLING.SUBSCRIPTION.EXPIRED','BILLING.SUBSCRIPTION.PAYMENT.FAILED','PAYMENT.SALE.COMPLETED','PAYMENT.SALE.DENIED','PAYMENT.SALE.REFUNDED','PAYMENT.SALE.REVERSED'];
+const available=await request('/v1/notifications/webhooks-event-types');
+if(events.some(name=>!available.event_types.some(e=>e.name===name)))throw new Error('A requested billing event is unavailable for this sandbox.');
+const existing=await request('/v1/notifications/webhooks');
+let hook=existing.webhooks.find(h=>h.url===url.href);
+if(hook&&events.some(name=>!hook.event_types.some(e=>e.name===name||e.name==='*')))throw new Error('Existing webhook has different event coverage; review it before changing.');
+if(!hook)hook=await request('/v1/notifications/webhooks',{url:url.href,event_types:events.map(name=>({name}))});
+if(typeof hook.id!=='string'||!hook.id)throw new Error('No webhook reference returned.');
+const text=readFileSync('supabase/.env.local','utf8').replace(/^PAYPAL_WEBHOOK_ID=.*$/m,'PAYPAL_WEBHOOK_ID='+hook.id);
+writeFileSync('supabase/.env.local',text,{mode:0o600});
+console.log('PAYPAL_WEBHOOK_ID='+hook.id);
