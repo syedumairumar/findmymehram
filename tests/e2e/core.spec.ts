@@ -14,21 +14,27 @@ test("demo matching, private likes and durable conversation", async ({
     page.getByRole("heading", { name: "The feeling’s mutual." }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Say hello", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Zara", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Zara", exact: true }),
+  ).toBeVisible();
   await page
     .getByLabel("Your message")
     .fill("A little hello from the integration test.");
   await page.getByRole("button", { name: "Send message", exact: true }).click();
   await expect(
-    page.getByText("A little hello from the integration test.", {
-      exact: true,
-    }),
+    page
+      .locator(".chat-history")
+      .getByText("A little hello from the integration test.", {
+        exact: true,
+      }),
   ).toBeVisible();
   await page.reload();
   await expect(
-    page.getByText("A little hello from the integration test.", {
-      exact: true,
-    }),
+    page
+      .locator(".chat-history")
+      .getByText("A little hello from the integration test.", {
+        exact: true,
+      }),
   ).toBeVisible();
   await page.goto("/likes");
   await expect(

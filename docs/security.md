@@ -13,7 +13,7 @@ Security is a release requirement. No website can be guaranteed unhackable. This
 - CSV exports neutralize formula-leading values. Dependencies are pinned with a lockfile, production audit is clean at the initial build, and CI/Dependabot configuration is included. CI actions are pinned to verified commit SHAs.
 - Server secret examples contain placeholders only. Service-role credentials must never enter `VITE_` settings, Git, logs or the browser. Local account fixture credentials and backend environment files are ignored.
 
-The core backend passed 16 direct authorization checks against local Supabase, including genuine TOTP enrollment/verification. Photo-function, calling, payment-provider and hosted-environment checks remain required; a frontend build does not prove those integrations.
+The core backend passed 29 direct authorization checks against local Supabase, including genuine TOTP enrollment/verification. Photo-function, calling, payment-provider and hosted-environment checks remain required; a frontend build does not prove those integrations.
 
 ## Hosting requirements before exposure
 

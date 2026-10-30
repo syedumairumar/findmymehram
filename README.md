@@ -8,7 +8,7 @@ An adults-only Pakistani/Indian dating and relationship web app, planned for mob
 
 The first application milestone is implemented: responsive landing/discovery, a labelled fictional demo, matching, persistent demo conversations, membership previews, profile editing, an admin dashboard, and a Supabase backend for real test accounts, matching, chat and TOTP two-factor authentication.
 
-The core backend has passed 16 direct authorization checks, including real authenticator verification. Audio/video calling, genuine provider sandbox checkout/webhooks, OAuth configuration, hosted transactional email and final launch policies remain outstanding. Their controls do not pretend to perform real calls or payments.
+The core backend has passed 29 direct authorization checks, including real authenticator verification. The call screen, relay function and call authorization are implemented but actual media and provider setup remain unverified. Genuine provider sandbox checkout/webhooks, OAuth configuration, hosted transactional email and final launch policies remain outstanding. Their controls do not pretend to perform real calls or payments.
 
 ## Hosted preview
 
@@ -62,5 +62,6 @@ See the local guide for Docker compatibility and service limitations. Never depl
 - [Deployment and rollback](docs/deployment.md)
 - [Payments and administration specification](docs/payments-and-admin.md)
 - [Security design and release gates](docs/security.md)
+- [Chat and calls](docs/communications.md)
 
 Initial testing uses invited adult testers, fictional profiles and sandbox payments. The target is zero hosting spend within free quotas; no public launch, live payment approval or unlimited free capacity is implied.

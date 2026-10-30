@@ -161,7 +161,121 @@ try {
     received.data?.some((m) => m.content === body),
     "matched member can read durable message text",
   );
+  check(
+    Boolean(
+      (
+        await outsider.client.rpc("start_call", {
+          conversation_id: match,
+          wants_video: true,
+        })
+      ).error,
+    ),
+    "unrelated member cannot initiate a call",
+  );
+  const invitation = await a.client.rpc("start_call", {
+    conversation_id: match,
+    wants_video: false,
+  });
+  if (invitation.error) throw invitation.error;
+  const call = invitation.data.id;
+  check(
+    invitation.data.receiver_id === b.id,
+    "call recipient is derived from the mutual match",
+  );
+  check(
+    Boolean((await a.client.rpc("answer_call", { call_ref: call })).error),
+    "caller cannot accept on the recipient's behalf",
+  );
+  check(
+    Boolean(
+      (await outsider.client.rpc("answer_call", { call_ref: call })).error,
+    ),
+    "unrelated member cannot answer a call",
+  );
+  check(
+    Boolean(
+      (
+        await a.client.rpc("send_call_signal", {
+          call_ref: call,
+          signal_kind: "offer",
+          signal_payload: { type: "offer", sdp: "fixture" },
+        })
+      ).error,
+    ),
+    "media negotiation requires recipient acceptance",
+  );
+  const accepted = await b.client.rpc("answer_call", { call_ref: call });
+  if (accepted.error) throw accepted.error;
+  const offered = await a.client.rpc("send_call_signal", {
+    call_ref: call,
+    signal_kind: "offer",
+    signal_payload: { type: "offer", sdp: "fixture" },
+  });
+  if (offered.error) throw offered.error;
+  check(
+    (await b.client.from("call_signals").select("*").eq("call_id", call)).data
+      ?.length === 1,
+    "matched recipient can read accepted-call signaling",
+  );
+  check(
+    (await outsider.client.from("call_signals").select("*").eq("call_id", call))
+      .data?.length === 0,
+    "unrelated member cannot read signaling",
+  );
+  check(
+    Boolean(
+      (
+        await a.client.rpc("send_call_signal", {
+          call_ref: call,
+          signal_kind: "answer",
+          signal_payload: { type: "answer", sdp: "fixture" },
+        })
+      ).error,
+    ),
+    "caller cannot forge the recipient's answer",
+  );
+  check(
+    Boolean(
+      (
+        await a.client.rpc("send_call_signal", {
+          call_ref: call,
+          signal_kind: "candidate",
+          signal_payload: {
+            candidate: "candidate:1 1 UDP 123 192.168.1.2 12345 typ host",
+          },
+        })
+      ).error,
+    ),
+    "direct host ICE candidate is rejected",
+  );
+  const relay = await a.client.rpc("claim_call_relay", { call_ref: call });
+  const relayAgain = await a.client.rpc("claim_call_relay", { call_ref: call });
+  check(
+    relay.data === true && relayAgain.data === false,
+    "relay credential grants cannot be repeatedly minted",
+  );
   await b.client.rpc("block_member", { target_id: a.id });
+  check(
+    Boolean(
+      (
+        await a.client.rpc("send_call_signal", {
+          call_ref: call,
+          signal_kind: "candidate",
+          signal_payload: {
+            candidate: "candidate:1 1 UDP 123 1.2.3.4 12345 typ relay",
+          },
+        })
+      ).error,
+    ),
+    "blocking revokes subsequent call signaling",
+  );
+  check(
+    (await a.client.from("call_signals").select("*").eq("call_id", call)).data
+      ?.length === 0,
+    "blocking revokes signaling reads",
+  );
+  const ended = await a.client.rpc("end_call", { call_ref: call });
+  check(!ended.error, "a blocked participant can still hang up");
   check(
     Boolean(
       (

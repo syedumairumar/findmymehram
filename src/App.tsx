@@ -30,15 +30,23 @@ import {
 import { useApp } from "./store";
 import { backend, message, supabase } from "./lib/supabase";
 import { portraits } from "./lib/demo";
-import Discover from "./pages/Discover";
-import {
-  Likes,
-  MembershipPage,
-  ProfilePage,
-  SecurityPage,
-  PolicyPage,
-} from "./pages/Account";
-import Messages from "./pages/Messages";
+const Discover = lazy(() => import("./pages/Discover"));
+const Messages = lazy(() => import("./pages/Messages"));
+const Likes = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.Likes })),
+);
+const MembershipPage = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.MembershipPage })),
+);
+const ProfilePage = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.ProfilePage })),
+);
+const SecurityPage = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.SecurityPage })),
+);
+const PolicyPage = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.PolicyPage })),
+);
 const Admin = lazy(() => import("./pages/Admin"));
 
 export function Brand() {
@@ -713,98 +721,106 @@ export default function App() {
       </a>
       <Header />
       <div id="main-content">
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route
-            path="/discover"
-            element={
-              <Shell>
-                <Discover />
-              </Shell>
-            }
-          />
-          <Route
-            path="/likes"
-            element={
-              <Shell>
-                <Likes />
-              </Shell>
-            }
-          />
-          <Route
-            path="/messages"
-            element={
-              <Shell>
-                <Messages />
-              </Shell>
-            }
-          />
-          <Route
-            path="/membership"
-            element={
-              a.mode === "guest" ? (
+        <Suspense
+          fallback={
+            <div className="loading" role="status">
+              Loading your next chapter…
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route
+              path="/discover"
+              element={
+                <Shell>
+                  <Discover />
+                </Shell>
+              }
+            />
+            <Route
+              path="/likes"
+              element={
+                <Shell>
+                  <Likes />
+                </Shell>
+              }
+            />
+            <Route
+              path="/messages"
+              element={
+                <Shell>
+                  <Messages />
+                </Shell>
+              }
+            />
+            <Route
+              path="/membership"
+              element={
+                a.mode === "guest" ? (
+                  <>
+                    <MembershipPage />
+                    <Footer />
+                  </>
+                ) : (
+                  <Shell>
+                    <MembershipPage />
+                  </Shell>
+                )
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <Shell>
+                  <ProfilePage />
+                </Shell>
+              }
+            />
+            <Route
+              path="/security"
+              element={
+                <Shell>
+                  <SecurityPage />
+                </Shell>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <Shell>
+                  <Suspense
+                    fallback={<div className="loading">Loading dashboard…</div>}
+                  >
+                    <Admin />
+                  </Suspense>
+                </Shell>
+              }
+            />
+            <Route
+              path="/policies/:kind"
+              element={
                 <>
-                  <MembershipPage />
+                  <PolicyPage />
                   <Footer />
                 </>
-              ) : (
-                <Shell>
-                  <MembershipPage />
-                </Shell>
-              )
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <Shell>
-                <ProfilePage />
-              </Shell>
-            }
-          />
-          <Route
-            path="/security"
-            element={
-              <Shell>
-                <SecurityPage />
-              </Shell>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <Shell>
-                <Suspense
-                  fallback={<div className="loading">Loading dashboard…</div>}
-                >
-                  <Admin />
-                </Suspense>
-              </Shell>
-            }
-          />
-          <Route
-            path="/policies/:kind"
-            element={
-              <>
-                <PolicyPage />
-                <Footer />
-              </>
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <main className="empty-state">
-                <h1>A little off the path.</h1>
-                <p>We couldn’t find that page.</p>
-                <Link to="/" className="button primary">
-                  Go home
-                </Link>
-              </main>
-            }
-          />
-        </Routes>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <main className="empty-state">
+                  <h1>A little off the path.</h1>
+                  <p>We couldn’t find that page.</p>
+                  <Link to="/" className="button primary">
+                    Go home
+                  </Link>
+                </main>
+              }
+            />
+          </Routes>
+        </Suspense>
       </div>
       {a.notice && (
         <div className="toast" role="status">

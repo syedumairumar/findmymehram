@@ -19,7 +19,8 @@
     "backend:test": "node scripts/backend-test.mjs",
     "backend:env": "node scripts/local-env.mjs",
     "backend:seed": "node scripts/seed-local.mjs",
-    "functions:serve": "supabase functions serve --env-file supabase/.env.local"
+    "functions:serve": "supabase functions serve --env-file supabase/.env.local",
+    "functions:check": "node scripts/check-functions.mjs"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "5.3.0",

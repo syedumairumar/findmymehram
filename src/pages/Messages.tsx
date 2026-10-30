@@ -10,9 +10,11 @@ import {
   Flag,
 } from "lucide-react";
 import { useApp } from "../store";
+import { useCalls } from "../Calls";
 import { backend, message } from "../lib/supabase";
 import type { ChatMessage } from "../types";
 export default function Messages() {
+  const calls = useCalls();
   const a = useApp(),
     [params, setParams] = useSearchParams();
   const [rows, setRows] = useState<ChatMessage[]>([]),
@@ -128,26 +130,14 @@ export default function Messages() {
                 <button
                   className="icon-button"
                   aria-label="Audio call"
-                  onClick={() =>
-                    a.notify(
-                      a.mode === "demo"
-                        ? "The demo does not place real calls."
-                        : "Calling is not enabled yet. The authenticated signaling and TURN integration is the next communication milestone.",
-                    )
-                  }
+                  onClick={() => calls.start(match.id, false)}
                 >
                   <Phone size={19} />
                 </button>
                 <button
                   className="icon-button"
                   aria-label="Video call"
-                  onClick={() =>
-                    a.notify(
-                      a.mode === "demo"
-                        ? "The demo does not access your camera or place real calls."
-                        : "Video calling needs the authenticated signaling and TURN integration before it can be enabled.",
-                    )
-                  }
+                  onClick={() => calls.start(match.id, true)}
                 >
                   <Video size={21} />
                 </button>
